@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum ProcessingStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum QuestionStatus {
+  PENDING
+  ANSWERED_BY_AI
+  ESCALATED_TO_TEACHER
+  RESOLVED_BY_TEACHER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  coursesCreated    Course[]           @relation("CourseCreator")
+  courseAssignments CourseAssignment[]
+  lecturesUploaded  Lecture[]          @relation("LectureTeacher")
+  progress          StudentProgress[]
+  questionsAsked    Question[]         @relation("QuestionStudent")
+  questionsAnswered Question[]         @relation("QuestionTeacher")
+
+  @@map("users")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  createdById String
+  createdBy   User     @relation("CourseCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments CourseAssignment[]
+  lectures    Lecture[]
+
+  @@map("courses")
+}
+
+model CourseAssignment {
+  id         String   @id @default(uuid())
+  userId     String
+  courseId   String
+  role       Role
+  assignedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_assignments")
+}
+
+model Lecture {
+  id            String           @id @default(uuid())
+  courseId      String
+  uploadedById  String
+  title         String
+  sourceFileUrl String
+  status        ProcessingStatus @default(PROCESSING)
+  isStarted     Boolean          @default(false) // Teacher must click "Start Lecture" to make it visible to students
+  scriptContent String?          @db.Text
+  audioUrl      String?
+  errorMessage  String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  course     Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  uploadedBy User              @relation("LectureTeacher", fields: [uploadedById], references: [id])
+  segments   LectureSegment[]
+  progress   StudentProgress[]
+  questions  Question[]
+
+  @@index([courseId])
+  @@map("lectures")
+}
+
+model LectureSegment {
+  id           String @id @default(uuid())
+  lectureId    String
+  segmentIndex Int
+  segmentText  String @db.Text
+  pageNumber   Int
+  imageUrls    Json // Array of image URLs extracted from slide/page
+  startTimeMs  Int // Audio start timestamp in ms
+  endTimeMs    Int // Audio end timestamp in ms
+  keywords     Json? // Optional keywords/tags
+
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@index([lectureId])
+  @@map("lecture_segments")
+}
+
+model StudentProgress {
+  id             String   @id @default(uuid())
+  userId         String
+  lectureId      String
+  lastPositionMs Int      @default(0)
+  isCompleted    Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lectureId])
+  @@map("student_progress")
+}
+
+model Question {
+  id              String         @id @default(uuid())
+  lectureId       String
+  studentId       String
+  timestampMs     Int
+  questionText    String         @db.Text
+  answerText      String?        @db.Text
+  confidenceScore Float?
+  status          QuestionStatus @default(PENDING)
+  answeredById    String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  lecture    Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  student    User    @relation("QuestionStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  answeredBy User?   @relation("QuestionTeacher", fields: [answeredById], references: [id])
+
+  @@index([lectureId, status])
+  @@index([studentId])
+  @@map("questions")
+}
