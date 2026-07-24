@@ -5,3 +5,9 @@ chroma_db/
 *.egg-info/
 venv/
 .venv/
+data/
+temp_uploads/
+*.mp3
+*.wav
+*.sqlite3
+*.bin
