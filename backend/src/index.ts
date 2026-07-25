@@ -1,8 +1,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 import authRoutes from "./routes/auth.routes";
 import courseRoutes from "./routes/course.routes";
+import lectureRoutes from "./routes/lecture.routes";
+
 // Load environment variables
 dotenv.config();
 
@@ -18,6 +21,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Static file serving for uploads
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 // ---------------------------------------------------------------------------
 // Health Check
@@ -39,11 +45,7 @@ app.get("/api/health", (_req, res) => {
 // ---------------------------------------------------------------------------
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
-// app.use("/api/v1/lectures", lectureRoutes);
-// app.use("/api/lectures", lectureRoutes);
-// app.use("/api/questions", questionRoutes);
-// app.use("/api/admin", adminRoutes);
-// app.use("/api/teacher", teacherRoutes);
+app.use("/api/v1/lectures", lectureRoutes);
 
 // ---------------------------------------------------------------------------
 // Global Error Handler
