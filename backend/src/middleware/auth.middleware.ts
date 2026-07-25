@@ -29,15 +29,18 @@ export const authenticate = async (
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      email: string;
-      role: "ADMIN" | "TEACHER" | "STUDENT";
-      name: string;
-    };
+    const secret = process.env.JWT_SECRET || "supersecretkey123";
+    const decoded = jwt.verify(token, secret) as any;
+
+    const userId = decoded.id || decoded.userId;
+
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Invalid token payload" });
+      return;
+    }
 
     // Verify user still exists in database
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       res.status(401).json({ success: false, message: "User not found" });
       return;
@@ -59,9 +62,6 @@ export const authenticate = async (
 /**
  * Factory function for role-based access control.
  * Returns middleware that only allows specified roles through.
- *
- * @example
- * router.post("/courses", authenticate, requireRole(["ADMIN"]), createCourse);
  */
 export const requireRole = (allowedRoles: Array<"ADMIN" | "TEACHER" | "STUDENT">) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
