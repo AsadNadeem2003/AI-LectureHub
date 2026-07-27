@@ -3,9 +3,10 @@ import { prisma } from "../lib/prisma";
 
 export const createCourse = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, description } = req.body;
+    const { title, description, teacherId } = req.body;
     const user = (req as any).user;
     const userId = user?.id || user?.userId;
+    const userRole = user?.role;
 
     if (!userId) {
       res.status(401).json({ error: "User authentication missing" });
@@ -20,10 +21,13 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
       },
     });
 
-    // Assign the creator as a TEACHER to this course by default
+    // If teacherId is provided and the user is ADMIN, assign the specified teacher.
+    // Otherwise, assign the creator as a TEACHER to this course by default.
+    const assignedUserId = (userRole === "ADMIN" && teacherId) ? teacherId : userId;
+
     await prisma.courseAssignment.create({
       data: {
-        userId,
+        userId: assignedUserId,
         courseId: course.id,
         role: "TEACHER",
       },
@@ -110,6 +114,35 @@ export const unassignUser = async (req: Request, res: Response): Promise<void> =
     res.status(200).json({ message: "User unassigned successfully" });
   } catch (error: any) {
     console.error("Unassign User Error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};
+
+export const getCourseStudents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id: courseId } = req.params;
+
+    const assignments = await prisma.courseAssignment.findMany({
+      where: {
+        courseId,
+        role: "STUDENT",
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    const students = assignments.map((a) => a.user);
+    res.status(200).json({ students });
+  } catch (error: any) {
+    console.error("Get Course Students Error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });
   }
 };

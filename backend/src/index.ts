@@ -2,11 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+
 import authRoutes from "./routes/auth.routes";
 import courseRoutes from "./routes/course.routes";
 import lectureRoutes from "./routes/lecture.routes";
+import questionRoutes from "./routes/question.routes";
+import analyticsRoutes from "./routes/analytics.routes";
+import userRoutes from "./routes/user.routes";
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -41,31 +44,35 @@ app.get("/api/health", (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Route Registration
+// API Routes
 // ---------------------------------------------------------------------------
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/lectures", lectureRoutes);
+app.use("/api/v1/questions", questionRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/users", userRoutes);
+
+// ---------------------------------------------------------------------------
+// 404 Handler
+// ---------------------------------------------------------------------------
+app.use((_req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
 
 // ---------------------------------------------------------------------------
 // Global Error Handler
 // ---------------------------------------------------------------------------
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error("❌ Unhandled error:", err.message);
-  res.status(500).json({
-    success: false,
-    message: process.env.NODE_ENV === "production"
-      ? "Internal server error"
-      : err.message,
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("❌ Global Error Handler:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
   });
 });
 
 // ---------------------------------------------------------------------------
-// Start Server
+// Start Express Server
 // ---------------------------------------------------------------------------
 app.listen(PORT, () => {
-  console.log(`🚀 AI LectureHub Backend running on http://localhost:${PORT}`);
-  console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🚀 Express Backend running on http://localhost:${PORT}`);
 });
-
-export default app;

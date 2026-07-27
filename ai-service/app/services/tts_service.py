@@ -81,9 +81,8 @@ class TTSService:
         if all_audio_bytes:
             with open(main_audio_filepath, "wb") as f:
                 f.write(all_audio_bytes)
-            print(f"✅ Created combined full audio file: {main_audio_filename} ({len(all_audio_bytes)} bytes)")
+            print(f"[OK] Created combined full audio file: {main_audio_filename} ({len(all_audio_bytes)} bytes)")
         else:
-            # Fallback: if no audio bytes generated, concatenate individual page files if they exist
             with open(main_audio_filepath, "wb") as outfile:
                 for slide in slide_scripts:
                     p_num = slide.get("page_number", 1)
@@ -125,3 +124,7 @@ class TTSService:
             except Exception as e:
                 print(f"[WARN] Cloudinary audio upload failed: {e}")
         return None
+
+
+# Global instance
+tts_service = TTSService()

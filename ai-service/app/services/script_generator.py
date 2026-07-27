@@ -2,7 +2,6 @@
 
 import os
 import re
-import time
 from typing import List, Dict, Any
 from app.models import ExtractedPage
 from app.config import settings
@@ -74,7 +73,7 @@ class GeminiScriptGenerator:
             else:
                 script_text = self._fallback_single_page(p_num, page.text, lecture_title)
 
-            keywords = self._extract_keywords(page.text + " " + script_text)
+            keywords = self._extract_core_academic_concepts(page.text, script_text, lecture_title)
             slide_scripts.append({
                 "page_number": p_num,
                 "script_text": script_text,
@@ -95,7 +94,7 @@ class GeminiScriptGenerator:
         for page in pages:
             p_num = page.page_number
             script_text = self._fallback_single_page(p_num, page.text, lecture_title)
-            keywords = self._extract_keywords(page.text + " " + script_text)
+            keywords = self._extract_core_academic_concepts(page.text, script_text, lecture_title)
 
             slide_scripts.append({
                 "page_number": p_num,
@@ -117,18 +116,51 @@ class GeminiScriptGenerator:
         first_sentence = clean_text.split(".")[0]
         return f"Welcome to slide {page_number}. In this section of {lecture_title}, we focus on {first_sentence}. Specifically, {clean_text}"
 
-    def _extract_keywords(self, text: str) -> List[str]:
-        words = re.findall(r"\b[A-Za-z]{4,}\b", text)
-        stopwords = {"this", "that", "with", "from", "have", "here", "were", "what", "when", "your", "more", "also", "into", "page", "slide"}
-        filtered = [w.capitalize() for w in words if w.lower() not in stopwords]
-        # Get unique top 4 keywords
-        unique = []
-        for word in filtered:
-            if word not in unique:
-                unique.append(word)
-            if len(unique) >= 4:
-                break
-        return unique or ["Lecture", "Concept", "Slide"]
+    def _extract_core_academic_concepts(self, raw_page_text: str, script_text: str, lecture_title: str) -> List[str]:
+        """Extract high-impact core academic concepts, filtering out filler words."""
+        combined_text = f"{raw_page_text} {script_text} {lecture_title}"
+
+        # 1. First, search for Multi-Word Technical Capitalized Phrases (e.g. "Deep Learning", "Neural Networks", "Gradient Descent")
+        multi_word_matches = re.findall(r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b", raw_page_text)
+        
+        filler_phrases = {
+            "slide", "welcome", "section", "lecture",
+            "particular facts", "cross cases", "judicial consensus", "ratio decidendi",
+            "tentatively assess", "single incident", "opposite party", "mere assertion"
+        }
+
+        concepts = []
+        for phrase in multi_word_matches:
+            clean_phrase = phrase.strip()
+            if clean_phrase.lower() not in filler_phrases and len(clean_phrase) > 4:
+                if clean_phrase not in concepts:
+                    concepts.append(clean_phrase)
+
+        # 2. Extract Single Academic Nouns/Keywords (deduplicate if already in multi-word concepts)
+        single_words = re.findall(r"\b[A-Za-z]{4,}\b", combined_text)
+        stopwords = {
+            "this", "that", "with", "from", "have", "here", "were", "what", "when", "your",
+            "more", "also", "into", "page", "slide", "welcome", "section", "focus", "specifically",
+            "appears", "consensus", "application", "principles", "particular", "facts", "circumstances",
+            "proposition", "illustrated", "cases", "constitute", "assertion", "counter", "enough",
+            "courts", "tentatively", "assess", "parties", "venue", "transaction", "result", "incident",
+            "narrated", "opposing", "rationale", "frivolous", "false", "exaggerated", "gain", "advantage",
+            "examine", "overview", "summary", "introduction", "about", "there"
+        }
+
+        for w in single_words:
+            w_cap = w.capitalize()
+            is_in_concept = any(w.lower() in c.lower() for c in concepts)
+            if w.lower() not in stopwords and not is_in_concept and w_cap not in concepts and len(w) > 3:
+                concepts.append(w_cap)
+
+        # 3. Always ensure fallback academic concept from lecture title if empty
+        if not concepts:
+            title_keywords = [w.capitalize() for w in re.findall(r"\b[A-Za-z]{4,}\b", lecture_title) if w.lower() not in stopwords]
+            concepts.extend(title_keywords)
+
+        # Return top 4 distinct core concepts
+        return concepts[:4] or ["Core Concept", "Key Principles"]
 
 
 # Global instance

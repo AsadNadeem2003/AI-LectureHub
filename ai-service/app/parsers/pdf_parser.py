@@ -1,4 +1,4 @@
-"""PDF Parser using PyMuPDF (fitz) to extract text and images page by page."""
+"""PDF Parser using PyMuPDF (fitz) to extract text and high-res page slide images."""
 
 import fitz  # PyMuPDF
 import base64
@@ -8,13 +8,13 @@ from app.models import ExtractedPage, ExtractionResult
 
 
 def parse_pdf(file_path_or_bytes: bytes | str) -> ExtractionResult:
-    """Extract text and images from a PDF file per page.
+    """Extract text and high-resolution slide images from a PDF file per page.
     
     Args:
         file_path_or_bytes: File path or raw bytes of the PDF.
         
     Returns:
-        ExtractionResult containing page-by-page text and base64/URL images.
+        ExtractionResult containing page-by-page text and base64 slide images.
     """
     if isinstance(file_path_or_bytes, bytes):
         doc = fitz.open(stream=file_path_or_bytes, filetype="pdf")
@@ -27,25 +27,36 @@ def parse_pdf(file_path_or_bytes: bytes | str) -> ExtractionResult:
         page = doc.load_page(page_idx)
         text = page.get_text("text").strip()
 
-        # Extract images embedded in the page
         images = []
-        image_list = page.get_images(full=True)
 
-        for img_idx, img in enumerate(image_list):
-            xref = img[0]
-            base_image = doc.extract_image(xref)
-            image_bytes = base_image["image"]
-            image_ext = base_image["ext"]
+        # 1. Render high-res 150 DPI page pixmap so visual slides/graphics display perfectly
+        try:
+            pix = page.get_pixmap(dpi=150)
+            page_bytes = pix.tobytes("png")
+            b64_page = base64.b64encode(page_bytes).decode("utf-8")
+            images.append(f"data:image/png;base64,{b64_page}")
+        except Exception as e:
+            print(f"[WARN] Failed page pixmap render for page {page_idx+1}: {e}")
 
-            # Encode as base64 data URI for inline visual sync
-            b64_str = base64.b64encode(image_bytes).decode("utf-8")
-            data_uri = f"data:image/{image_ext};base64,{b64_str}"
-            images.append(data_uri)
+        # 2. Extract embedded images if any
+        try:
+            image_list = page.get_images(full=True)
+            for img_idx, img in enumerate(image_list):
+                xref = img[0]
+                base_image = doc.extract_image(xref)
+                image_bytes = base_image["image"]
+                image_ext = base_image["ext"]
+
+                b64_str = base64.b64encode(image_bytes).decode("utf-8")
+                data_uri = f"data:image/{image_ext};base64,{b64_str}"
+                images.append(data_uri)
+        except Exception as e:
+            print(f"[WARN] Embedded image extraction fallback for page {page_idx+1}: {e}")
 
         extracted_pages.append(
             ExtractedPage(
                 page_number=page_idx + 1,
-                text=text,
+                text=text or f"Slide {page_idx + 1} presentation content",
                 images=images
             )
         )

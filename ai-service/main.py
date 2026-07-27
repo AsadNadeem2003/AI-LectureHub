@@ -34,7 +34,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(extract_routes.router)
 app.include_router(vector_routes.router)
 app.include_router(process.router)
-app.include_router(qa.router, prefix="/ai", tags=["Q&A"])
+app.include_router(qa.router, tags=["Q&A"])
 
 if __name__ == "__main__":
     import uvicorn
