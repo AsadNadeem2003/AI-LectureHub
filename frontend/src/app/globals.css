@@ -1,219 +1,83 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
-/* ── AI LectureHub Design Tokens ─────────────────────────────────────── */
+/* ── AI LectureHub Light-First Design System Tokens ────────────────── */
 :root {
-  /* Core palette */
+  /* Canvas & Card Surfaces */
+  --bg-canvas: #f8fafc; /* Slate-50 */
+  --bg-card: #ffffff;   /* Crisp White */
+  --border-subtle: #e2e8f0; /* Slate-200 */
 
-  /* Primary – vibrant indigo-violet */
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: #4f46e5;
+  /* Role System Palette */
+  --role-admin: #4f46e5;    /* Indigo-600 */
+  --role-admin-bg: #eef2ff; /* Indigo-50 */
+  --role-admin-border: #c7d2fe;
 
-  /* Secondary – slate tones */
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --role-teacher: #d97706;  /* Amber-600 */
+  --role-teacher-bg: #fffbeb;/* Amber-50 */
+  --role-teacher-border: #fde68a;
 
-  /* Accent – electric teal */
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --role-student: #059669;  /* Emerald-600 */
+  --role-student-bg: #ecfdf5;/* Emerald-50 */
+  --role-student-border: #a7f3d0;
 
-  /* Muted */
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-
-  /* Destructive */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: #ffffff;
-
-  /* Card */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-
-  /* Border & Ring */
-  --border: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-
-  /* Input */
-  --input: oklch(0.922 0 0);
-
-  /* Sidebar */
-  --sidebar-bg: #0f172a;
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  /* Text Colors */
+  --text-primary: #0f172a;   /* Slate-900 */
+  --text-secondary: #475569; /* Slate-600 */
+  --text-muted: #94a3b8;     /* Slate-400 */
 
   /* Radius */
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.375rem;
 }
 
-/* ── Dark Mode ───────────────────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-
-    --primary: #818cf8;
-    --primary-foreground: #020617;
-    --primary-hover: #6366f1;
-
-    --secondary: #1e293b;
-    --secondary-foreground: #cbd5e1;
-
-    --accent: #22d3ee;
-    --accent-foreground: #020617;
-
-    --muted: #0f172a;
-    --muted-foreground: #94a3b8;
-
-    --destructive: #f87171;
-    --destructive-foreground: #020617;
-
-    --card: #0f172a;
-    --card-foreground: #f1f5f9;
-
-    --border: #1e293b;
-    --ring: #818cf8;
-    --input: #1e293b;
-
-    --sidebar-bg: #020617;
-    --sidebar-foreground: #cbd5e1;
-    --sidebar-accent: #818cf8;
-  }
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* ── Tailwind v4 Theme Mapping ───────────────────────────────────────── */
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-hover: var(--primary-hover);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 4px);
-  --radius-xl: calc(var(--radius) + 8px);
-  --font-sans: var(--font-sans);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
-/* ── Base Styles ─────────────────────────────────────────────────────── */
-
-/* ── Smooth scrollbar ────────────────────────────────────────────────── */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--muted-foreground) transparent;
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
 }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
+.glass-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
 }
 
-*::-webkit-scrollbar-thumb {
-  background-color: var(--muted-foreground);
-  border-radius: 3px;
+/* Role Badges */
+.badge-admin {
+  background-color: var(--role-admin-bg);
+  color: var(--role-admin);
+  border: 1px solid var(--role-admin-border);
 }
 
-/* ── Focus ring utility ──────────────────────────────────────────────── */
-.focus-ring {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+.badge-teacher {
+  background-color: var(--role-teacher-bg);
+  color: var(--role-teacher);
+  border: 1px solid var(--role-teacher-border);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+.badge-student {
+  background-color: var(--role-student-bg);
+  color: var(--role-student);
+  border: 1px solid var(--role-student-border);
 }

@@ -9,6 +9,8 @@ import {
   startLecture,
   getLectureById,
   getCourseLectures,
+  saveStudentProgress,
+  getLecturePlayData,
 } from '../controllers/lecture.controller';
 
 const router = Router();
@@ -39,14 +41,20 @@ const upload = multer({
 // All lecture routes require JWT auth
 router.use(authenticate);
 
-// Teacher/Admin upload endpoint (sub-second response)
-router.post('/upload', requireRole(['TEACHER', 'ADMIN']), upload.single('file'), uploadLecture);
+// Teacher/Admin upload endpoint: multer handler runs FIRST to parse multipart form data
+router.post('/upload', upload.single('file'), requireRole(['TEACHER', 'ADMIN']), uploadLecture);
 
 // Status polling endpoint
 router.get('/:id/status', getLectureStatus);
 
 // Teacher start lecture endpoint
 router.post('/:id/start', requireRole(['TEACHER', 'ADMIN']), startLecture);
+
+// Get complete lecture play payload (including saved student progress position)
+router.get('/:id/play', getLecturePlayData);
+
+// Save student progress endpoint
+router.post('/:id/progress', saveStudentProgress);
 
 // Get complete lecture details with segments and audio
 router.get('/:id', getLectureById);

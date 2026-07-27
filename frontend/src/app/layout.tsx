@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import GlobalNavbar from "@/components/layout/GlobalNavbar";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+});
 
 const inter = Inter({
-  variable: "--font-inter",
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "AI LectureHub — Smart Education Platform",
+  title: "AI LectureHub — Smart Educational Platform",
   description:
-    "AI-powered educational platform where teachers upload materials and AI generates narrated lectures with synced visuals. Students can ask questions grounded in lecture content.",
-  keywords: ["AI", "education", "lectures", "e-learning", "RAG", "LectureHub"],
+    "AI-powered educational platform where teachers upload materials and AI generates narrated lectures with synced visuals.",
 };
 
 export default function RootLayout({
@@ -23,9 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        {children}
+    <html lang="en" className={`${plusJakartaSans.variable} ${inter.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
+        <GlobalNavbar />
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
+        </main>
       </body>
     </html>
   );

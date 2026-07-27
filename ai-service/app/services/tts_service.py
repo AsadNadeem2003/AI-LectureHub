@@ -1,7 +1,6 @@
 """Text-To-Speech (TTS) synthesis service for generating lecture audio and calculating timestamps."""
 
 import os
-import wave
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -17,7 +16,7 @@ class TTSService:
         lecture_id: str,
         slide_scripts: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Synthesize TTS audio for each slide script and return segment timings.
+        """Synthesize TTS audio for each slide script and combine into full lecture audio.
         
         Args:
             lecture_id: Identifier for the lecture
@@ -31,6 +30,7 @@ class TTSService:
         """
         slide_timings = []
         current_time_ms = 0
+        all_audio_bytes = bytearray()
 
         for slide in slide_scripts:
             p_num = slide.get("page_number", 1)
@@ -38,32 +38,31 @@ class TTSService:
 
             # Calculate duration (approx 150 words per minute = 2.5 words per sec = ~400ms per word)
             word_count = max(1, len(text.split()))
-            estimated_duration_ms = max(3000, word_count * 380)
+            estimated_duration_ms = max(4000, word_count * 400)
 
-            # Generate MP3 using gTTS if available
+            # Generate MP3 using gTTS
             audio_filename = f"{lecture_id}_p{p_num}.mp3"
             audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, audio_filename)
 
+            slide_bytes = b""
             try:
                 from gtts import gTTS
                 tts = gTTS(text=text, lang="en", slow=False)
                 tts.save(audio_filepath)
+                with open(audio_filepath, "rb") as f:
+                    slide_bytes = f.read()
             except Exception as e:
                 print(f"[WARN] gTTS synthesis fallback for page {p_num}: {e}")
-                # Create empty marker file if gTTS network fails
-                with open(audio_filepath, "wb") as f:
-                    f.write(b"MOCK_AUDIO_DATA")
+                slide_bytes = b""
+
+            if slide_bytes:
+                all_audio_bytes.extend(slide_bytes)
 
             start_ms = current_time_ms
             end_ms = current_time_ms + estimated_duration_ms
             current_time_ms = end_ms
 
             audio_url = f"/data/audio/{audio_filename}"
-
-            # Optional Cloudinary upload
-            cloudinary_url = self._upload_to_cloudinary(audio_filepath, audio_filename)
-            if cloudinary_url:
-                audio_url = cloudinary_url
 
             slide_timings.append({
                 "page_number": p_num,
@@ -75,8 +74,30 @@ class TTSService:
                 "audio_url": audio_url
             })
 
+        # Save combined full lecture MP3 audio file
         main_audio_filename = f"{lecture_id}_full.mp3"
+        main_audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, main_audio_filename)
+
+        if all_audio_bytes:
+            with open(main_audio_filepath, "wb") as f:
+                f.write(all_audio_bytes)
+            print(f"✅ Created combined full audio file: {main_audio_filename} ({len(all_audio_bytes)} bytes)")
+        else:
+            # Fallback: if no audio bytes generated, concatenate individual page files if they exist
+            with open(main_audio_filepath, "wb") as outfile:
+                for slide in slide_scripts:
+                    p_num = slide.get("page_number", 1)
+                    pf = os.path.join(AUDIO_OUTPUT_DIR, f"{lecture_id}_p{p_num}.mp3")
+                    if os.path.exists(pf):
+                        with open(pf, "rb") as infile:
+                            outfile.write(infile.read())
+
         main_audio_url = f"/data/audio/{main_audio_filename}"
+
+        # Optional Cloudinary upload
+        cloudinary_url = self._upload_to_cloudinary(main_audio_filepath, main_audio_filename)
+        if cloudinary_url:
+            main_audio_url = cloudinary_url
 
         return {
             "full_audio_url": main_audio_url,
@@ -102,9 +123,5 @@ class TTSService:
                 )
                 return res.get("secure_url")
             except Exception as e:
-                print(f"[WARN] Cloudinary upload failed: {e}")
+                print(f"[WARN] Cloudinary audio upload failed: {e}")
         return None
-
-
-# Global instance
-tts_service = TTSService()

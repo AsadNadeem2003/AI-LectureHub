@@ -4,7 +4,13 @@ import { prisma } from "../lib/prisma";
 export const createCourse = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, description } = req.body;
-    const userId = (req as any).user.userId;
+    const user = (req as any).user;
+    const userId = user?.id || user?.userId;
+
+    if (!userId) {
+      res.status(401).json({ error: "User authentication missing" });
+      return;
+    }
 
     const course = await prisma.course.create({
       data: {
@@ -24,15 +30,17 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
     });
 
     res.status(201).json({ message: "Course created successfully", course });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Create Course Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
 
 export const getCourses = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId, role } = (req as any).user;
+    const user = (req as any).user;
+    const userId = user?.id || user?.userId;
+    const role = user?.role;
 
     let courses;
     if (role === "ADMIN") {
@@ -55,9 +63,9 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
     }
 
     res.status(200).json({ courses });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Get Courses Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
 
@@ -82,9 +90,9 @@ export const assignUser = async (req: Request, res: Response): Promise<void> => 
     });
 
     res.status(200).json({ message: "User assigned successfully", assignment });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Assign User Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
 
@@ -100,8 +108,8 @@ export const unassignUser = async (req: Request, res: Response): Promise<void> =
     });
 
     res.status(200).json({ message: "User unassigned successfully" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Unassign User Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error.message || "Internal server error" });
   }
 };

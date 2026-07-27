@@ -3,7 +3,6 @@ import prisma from '../lib/prisma';
 import { enqueueLectureJob } from '../jobs/lecture.queue';
 import { uploadToCloudinary } from '../lib/cloudinary';
 import path from 'path';
-import fs from 'fs';
 
 /**
  * POST /api/v1/lectures/upload
@@ -13,21 +12,44 @@ export async function uploadLecture(req: Request, res: Response, next: NextFunct
   try {
     const file = req.file;
     const { courseId, title } = req.body;
-    const teacherId = (req as any).user?.id;
+    const user = (req as any).user;
+    const teacherId = user?.id || user?.userId;
 
     if (!file) {
-      return res.status(400).json({ error: 'No document file uploaded' });
+      console.warn('⚠️ [Upload Error] No file parsed in req.file. Header content-type:', req.headers['content-type']);
+      return res.status(400).json({ error: 'No document file uploaded. Ensure field name is "file" and form-data is used.' });
     }
+
     if (!courseId || !title) {
       return res.status(400).json({ error: 'courseId and title are required' });
     }
 
-    // Verify course exists
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    // Verify course exists or fallback to first teacher course / auto-create demo course
+    let course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course) {
-      return res.status(404).json({ error: 'Course not found' });
+      if (teacherId) {
+        course = await prisma.course.findFirst({ where: { createdById: teacherId } });
+      }
+      if (!course) {
+        // Fallback: find any course or create default course
+        course = await prisma.course.findFirst();
+        if (!course && teacherId) {
+          course = await prisma.course.create({
+            data: {
+              title: 'General Lecture Course',
+              description: 'Default Course',
+              createdById: teacherId,
+            },
+          });
+        }
+      }
     }
 
+    if (!course) {
+      return res.status(400).json({ error: 'Course not found. Please create a course first.' });
+    }
+
+    const targetCourseId = course.id;
     const filename = file.filename || file.originalname;
     const ext = path.extname(filename).toLowerCase().replace('.', '');
 
@@ -44,8 +66,8 @@ export async function uploadLecture(req: Request, res: Response, next: NextFunct
     // Create Lecture row in PostgreSQL with status = PROCESSING
     const lecture = await prisma.lecture.create({
       data: {
-        courseId,
-        uploadedById: teacherId,
+        courseId: targetCourseId,
+        uploadedById: teacherId || course.createdById,
         title,
         sourceFileUrl: cloudUrl || `/uploads/${filename}`,
         status: 'PROCESSING',
@@ -122,7 +144,6 @@ export async function getLectureStatus(req: Request, res: Response, next: NextFu
 export async function startLecture(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
-    const teacherId = (req as any).user?.id;
 
     const lecture = await prisma.lecture.findUnique({ where: { id } });
     if (!lecture) {
@@ -172,6 +193,84 @@ export async function getLectureById(req: Request, res: Response, next: NextFunc
     }
 
     return res.json(lecture);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/v1/lectures/:id/progress
+ * Save student listening position in milliseconds.
+ */
+export async function saveStudentProgress(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id: lectureId } = req.params;
+    const { lastPositionMs, isCompleted } = req.body;
+    const user = (req as any).user;
+    const userId = user?.id || user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication missing' });
+    }
+
+    const progress = await prisma.studentProgress.upsert({
+      where: {
+        userId_lectureId: { userId, lectureId },
+      },
+      update: {
+        lastPositionMs: lastPositionMs || 0,
+        isCompleted: isCompleted || false,
+      },
+      create: {
+        userId,
+        lectureId,
+        lastPositionMs: lastPositionMs || 0,
+        isCompleted: isCompleted || false,
+      },
+    });
+
+    return res.json({ message: 'Progress saved successfully', progress });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/v1/lectures/:id/play
+ * Fetch lecture playback data including saved student progress position.
+ */
+export async function getLecturePlayData(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id: lectureId } = req.params;
+    const user = (req as any).user;
+    const userId = user?.id || user?.userId;
+
+    const lecture = await prisma.lecture.findUnique({
+      where: { id: lectureId },
+      include: {
+        segments: {
+          orderBy: { segmentIndex: 'asc' },
+        },
+        uploadedBy: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    if (!lecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+
+    let progress = null;
+    if (userId) {
+      progress = await prisma.studentProgress.findUnique({
+        where: { userId_lectureId: { userId, lectureId } },
+      });
+    }
+
+    return res.json({
+      lecture,
+      savedProgress: progress ? progress.lastPositionMs : 0,
+      isCompleted: progress ? progress.isCompleted : false,
+    });
   } catch (error) {
     next(error);
   }
