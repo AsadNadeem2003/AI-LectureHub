@@ -54,6 +54,18 @@ export default function AdminDashboard() {
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("TEACHER");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+
+  // Enrollment states
+  const [enrollCourseId, setEnrollCourseId] = useState("");
+  const [enrollStudentId, setEnrollStudentId] = useState("");
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrollMessage, setEnrollMessage] = useState<string | null>(null);
+
   const fetchAdminData = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -142,6 +154,85 @@ export default function AdminDashboard() {
       setMessage(`Error: ${e.message}`);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleInviteUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName || !inviteEmail) return;
+
+    setInviteLoading(true);
+    setInviteMessage(null);
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/v1/auth/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: inviteName, email: inviteEmail, role: inviteRole }),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        router.push("/login");
+        return;
+      }
+
+      if (res.ok) {
+        setInviteMessage("Invitation sent successfully!");
+        setInviteName("");
+        setInviteEmail("");
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        setInviteMessage(`Error: ${err.message || err.error}`);
+      }
+    } catch (e: any) {
+      setInviteMessage(`Error: ${e.message}`);
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleEnrollStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!enrollCourseId || !enrollStudentId) return;
+
+    setEnrollLoading(true);
+    setEnrollMessage(null);
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/v1/courses/${enrollCourseId}/assign`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: enrollStudentId, role: "STUDENT" }),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        router.push("/login");
+        return;
+      }
+
+      if (res.ok) {
+        setEnrollMessage("Student successfully enrolled in course!");
+        setEnrollCourseId("");
+        setEnrollStudentId("");
+      } else {
+        const err = await res.json();
+        setEnrollMessage(`Error: ${err.message || err.error}`);
+      }
+    } catch (e: any) {
+      setEnrollMessage(`Error: ${e.message}`);
+    } finally {
+      setEnrollLoading(false);
     }
   };
 
@@ -304,6 +395,164 @@ export default function AdminDashboard() {
           </form>
         </div>
 
+        {/* Left Column Part 2: Invite User Form */}
+        <div className="lg:col-span-1 glass-card p-6 rounded-2xl border border-slate-200 space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <UserPlus className="w-5 h-5 text-emerald-600" />
+            <h3 className="font-heading font-bold text-slate-900 text-sm">
+              Securely Invite User
+            </h3>
+          </div>
+
+          <form onSubmit={handleInviteUser} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                placeholder="e.g. Dr. Jane Smith"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="jane.smith@lecturehub.pk"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                System Role
+              </label>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              >
+                <option value="TEACHER">Teacher (Faculty)</option>
+                <option value="STUDENT">Student (Learner)</option>
+              </select>
+            </div>
+
+            {inviteMessage && (
+              <div
+                className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                  inviteMessage.startsWith("Error")
+                    ? "bg-rose-50 text-rose-700"
+                    : "bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {inviteMessage.startsWith("Error") ? (
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                )}
+                {inviteMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={inviteLoading || !inviteName || !inviteEmail}
+              className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-1.5"
+            >
+              <UserPlus className="w-4 h-4" />
+              {inviteLoading ? "Sending Invite..." : "Send Secure Invite"}
+            </button>
+          </form>
+        </div>
+
+        {/* Left Column Part 3: Enroll Student Form */}
+        <div className="lg:col-span-1 glass-card p-6 rounded-2xl border border-slate-200 space-y-4 mt-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <UserPlus className="w-5 h-5 text-emerald-600" />
+            <h3 className="font-heading font-bold text-slate-900 text-sm">
+              Enroll Student in Course
+            </h3>
+          </div>
+
+          <form onSubmit={handleEnrollStudent} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Select Course
+              </label>
+              <select
+                required
+                value={enrollCourseId}
+                onChange={(e) => setEnrollCourseId(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              >
+                <option value="">-- Choose a Course --</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Select Student
+              </label>
+              <select
+                required
+                value={enrollStudentId}
+                onChange={(e) => setEnrollStudentId(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+              >
+                <option value="">-- Choose a Student --</option>
+                {users
+                  .filter((u) => u.role === "STUDENT")
+                  .map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name} ({student.email})
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {enrollMessage && (
+              <div
+                className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                  enrollMessage.startsWith("Error")
+                    ? "bg-rose-50 text-rose-700"
+                    : "bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {enrollMessage.startsWith("Error") ? (
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                )}
+                {enrollMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={enrollLoading || !enrollCourseId || !enrollStudentId}
+              className="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-1.5"
+            >
+              <UserPlus className="w-4 h-4" />
+              {enrollLoading ? "Enrolling..." : "Enroll Student"}
+            </button>
+          </form>
+        </div>
+
         {/* Right Column: Platform Courses Directory */}
         <div className="lg:col-span-2 glass-card p-6 rounded-2xl border border-slate-200 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -328,7 +577,7 @@ export default function AdminDashboard() {
                     <h4 className="font-bold text-xs text-slate-900">{c.title}</h4>
                     <p className="text-[11px] text-slate-500">{c.description || "University Curriculum Course"}</p>
                     <div className="flex items-center gap-3 text-[10px] text-slate-400 font-medium pt-1">
-                      <span>Instructor: {c.teacher?.name || "Dr. Ahmed Khan"}</span>
+                      <span>Instructor: {c.teacher?.name || "Unassigned"}</span>
                       <span>•</span>
                       <span>Lectures: {c._count?.lectures ?? 0}</span>
                       <span>•</span>

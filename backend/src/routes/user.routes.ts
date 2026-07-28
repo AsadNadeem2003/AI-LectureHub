@@ -6,12 +6,12 @@ const router = Router();
 
 /**
  * GET /api/v1/users
- * Admin only route to list all platform users (Teachers and Students)
+ * Admin & Teacher route to list all platform users (Teachers and Students) for assignment
  */
 router.get(
   "/",
   authenticate,
-  authorize(["ADMIN"]),
+  authorize(["ADMIN", "TEACHER"]),
   async (_req: Request, res: Response): Promise<void> => {
     try {
       const users = await prisma.user.findMany({

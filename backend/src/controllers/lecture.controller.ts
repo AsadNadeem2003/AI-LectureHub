@@ -286,10 +286,14 @@ export async function getCourseLectures(req: Request, res: Response, next: NextF
     const user = (req as any).user;
 
     const whereClause: any = { courseId };
+    
     // If student, only show lectures where isStarted = true
     if (user?.role === 'STUDENT') {
       whereClause.isStarted = true;
       whereClause.status = 'READY';
+    } else if (user?.role === 'TEACHER') {
+      // If teacher, only show their own uploaded lectures
+      whereClause.uploadedById = user.id || user.userId;
     }
 
     const lectures = await prisma.lecture.findMany({

@@ -9,6 +9,8 @@ import lectureRoutes from "./routes/lecture.routes";
 import questionRoutes from "./routes/question.routes";
 import analyticsRoutes from "./routes/analytics.routes";
 import userRoutes from "./routes/user.routes";
+import swaggerUi from "swagger-ui-express";
+import { specs } from "./swagger";
 
 dotenv.config();
 
@@ -52,6 +54,7 @@ app.use("/api/v1/lectures", lectureRoutes);
 app.use("/api/v1/questions", questionRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // ---------------------------------------------------------------------------
 // 404 Handler

@@ -27,6 +27,15 @@ export default function GlobalNavbar() {
       return;
     }
 
+    const storedUserStr = localStorage.getItem("user");
+    if (storedUserStr) {
+      try {
+        setUser(JSON.parse(storedUserStr));
+      } catch (e) {
+        // ignore
+      }
+    }
+
     // Decode token or fetch profile
     fetch("http://localhost:5000/api/v1/auth/me", {
       headers: { Authorization: `Bearer ${token}` },
@@ -38,26 +47,12 @@ export default function GlobalNavbar() {
       .then((data) => {
         if (data.user) {
           setUser(data.user);
-        } else {
-          // Fallback based on pathname if server response is partial
-          if (pathname.startsWith("/teacher")) {
-            setUser({ id: "t1", name: "Dr. Ahmed Khan", email: "teacher@lecturehub.pk", role: "TEACHER" });
-          } else if (pathname.startsWith("/admin")) {
-            setUser({ id: "a1", name: "System Admin", email: "admin@lecturehub.pk", role: "ADMIN" });
-          } else if (pathname.startsWith("/student")) {
-            setUser({ id: "s1", name: "Ali Raza", email: "student@lecturehub.pk", role: "STUDENT" });
-          }
+          localStorage.setItem("user", JSON.stringify(data.user));
         }
       })
       .catch(() => {
-        // Fallback profile if token exists on dashboard routes
-        if (pathname.startsWith("/teacher")) {
-          setUser({ id: "t1", name: "Dr. Ahmed Khan", email: "teacher@lecturehub.pk", role: "TEACHER" });
-        } else if (pathname.startsWith("/admin")) {
-          setUser({ id: "a1", name: "System Admin", email: "admin@lecturehub.pk", role: "ADMIN" });
-        } else if (pathname.startsWith("/student")) {
-          setUser({ id: "s1", name: "Ali Raza", email: "student@lecturehub.pk", role: "STUDENT" });
-        } else {
+        // If it fails and we have no stored user, clear token
+        if (!localStorage.getItem("user")) {
           localStorage.removeItem("token");
           setUser(null);
         }
@@ -79,15 +74,7 @@ export default function GlobalNavbar() {
   const isDashboardRoute =
     pathname.startsWith("/teacher") || pathname.startsWith("/student") || pathname.startsWith("/admin");
 
-  const effectiveUser =
-    user ||
-    (isDashboardRoute
-      ? pathname.startsWith("/teacher")
-        ? { id: "t1", name: "Dr. Ahmed Khan", email: "teacher@lecturehub.pk", role: "TEACHER" as const }
-        : pathname.startsWith("/admin")
-        ? { id: "a1", name: "System Admin", email: "admin@lecturehub.pk", role: "ADMIN" as const }
-        : { id: "s1", name: "Ali Raza", email: "student@lecturehub.pk", role: "STUDENT" as const }
-      : null);
+  const effectiveUser = user;
 
   const role = effectiveUser?.role || (pathname.startsWith("/teacher") ? "TEACHER" : pathname.startsWith("/admin") ? "ADMIN" : "STUDENT");
 

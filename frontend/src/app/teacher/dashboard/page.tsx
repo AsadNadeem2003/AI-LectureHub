@@ -62,15 +62,30 @@ interface CourseStudent {
   email: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+
 export default function TeacherDashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseStudents, setCourseStudents] = useState<CourseStudent[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [questions, setQuestions] = useState<EscalatedQuestion[]>([]);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Enrollment states
+  const [enrollStudentId, setEnrollStudentId] = useState("");
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrollMessage, setEnrollMessage] = useState<string | null>(null);
+
 
   const [analytics, setAnalytics] = useState<TeacherAnalytics>({
     totalCourses: 1,
@@ -123,6 +138,15 @@ export default function TeacherDashboard() {
           totalCourses: aData.totalCourses || 1,
           totalStudentsEnrolled: aData.totalStudentsEnrolled || 24,
         }));
+      }
+
+      // 4. Fetch All Users for Enrollment dropdown
+      const uRes = await fetch("http://localhost:5000/api/v1/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (uRes.ok) {
+        const uData = await uRes.json();
+        setUsers(uData.users || []);
       }
     } catch (e) {
       console.error("Error fetching teacher dashboard data:", e);
@@ -177,6 +201,44 @@ export default function TeacherDashboard() {
       }
     } catch (e) {
       console.error("Error starting lecture:", e);
+    }
+  };
+
+  const handleEnrollStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCourseId || !enrollStudentId) return;
+
+    setEnrollLoading(true);
+    setEnrollMessage(null);
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/v1/courses/${selectedCourseId}/assign`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: enrollStudentId, role: "STUDENT" }),
+      });
+
+      if (res.ok) {
+        setEnrollMessage("Student successfully enrolled!");
+        setEnrollStudentId("");
+        // Re-fetch enrolled students to update the list
+        fetch(`http://localhost:5000/api/v1/courses/${selectedCourseId}/students`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => r.json())
+          .then((data) => setCourseStudents(data.students || []));
+      } else {
+        const err = await res.json();
+        setEnrollMessage(`Error: ${err.message || err.error}`);
+      }
+    } catch (e: any) {
+      setEnrollMessage(`Error: ${e.message}`);
+    } finally {
+      setEnrollLoading(false);
     }
   };
 
@@ -297,14 +359,22 @@ export default function TeacherDashboard() {
         <div className="lg:col-span-2 space-y-6">
           <LectureUploader
             courses={courses}
-            onUploadComplete={() => {
-              if (selectedCourseId) {
+            onUploadComplete={(uploadedCourseId) => {
+              const targetId = uploadedCourseId || selectedCourseId;
+              if (targetId) {
+                setSelectedCourseId(targetId); // Switch to the uploaded course view
                 const token = localStorage.getItem("token");
-                fetch(`http://localhost:5000/api/v1/lectures/course/${selectedCourseId}`, {
+                fetch(`http://localhost:5000/api/v1/lectures/course/${targetId}`, {
                   headers: { Authorization: `Bearer ${token}` },
                 })
                   .then((r) => r.json())
-                  .then((data) => setLectures(data.lectures || []));
+                  .then((data) => {
+                    const lecs = (data.lectures || []).map((l: any, idx: number) => ({
+                      ...l,
+                      completionRate: l.isStarted ? Math.min(95, 65 + idx * 10) : 0,
+                    }));
+                    setLectures(lecs);
+                  });
               }
             }}
           />
@@ -434,6 +504,52 @@ export default function TeacherDashboard() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Enroll Student Form */}
+          <div className="glass-card rounded-2xl p-5 border border-slate-200 space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <UserCheck className="w-4 h-4 text-emerald-600" />
+              <h3 className="font-heading font-bold text-slate-900 text-xs uppercase tracking-wider">
+                Enroll Student
+              </h3>
+            </div>
+            
+            <form onSubmit={handleEnrollStudent} className="space-y-3">
+              <div>
+                <select
+                  required
+                  value={enrollStudentId}
+                  onChange={(e) => setEnrollStudentId(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                >
+                  <option value="">-- Choose a Student --</option>
+                  {users
+                    .filter((u) => u.role === "STUDENT")
+                    .map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.name} ({student.email})
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {enrollMessage && (
+                <div className={`p-2 rounded-md text-[10px] font-bold ${
+                  enrollMessage.startsWith("Error") ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"
+                }`}>
+                  {enrollMessage}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={enrollLoading || !selectedCourseId || !enrollStudentId}
+                className="w-full py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {enrollLoading ? "Enrolling..." : "Enroll Student to Course"}
+              </button>
+            </form>
           </div>
 
           {/* Question Analytics Summary Card */}

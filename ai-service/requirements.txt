@@ -14,3 +14,6 @@ cloudinary>=1.39.0
 requests>=2.31.0
 python-docx>=1.1.0
 python-multipart>=0.0.9
+openai>=1.40.0
+gtts>=2.5.1
+mutagen>=1.47.0

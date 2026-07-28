@@ -36,19 +36,29 @@ class TTSService:
             p_num = slide.get("page_number", 1)
             text = slide.get("script_text", "").strip() or f"Slide {p_num}"
 
-            # Calculate duration (approx 150 words per minute = 2.5 words per sec = ~400ms per word)
-            word_count = max(1, len(text.split()))
-            estimated_duration_ms = max(4000, word_count * 400)
-
             # Generate MP3 using gTTS
             audio_filename = f"{lecture_id}_p{p_num}.mp3"
             audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, audio_filename)
 
             slide_bytes = b""
+            actual_duration_ms = 4000 # Fallback default
+            
             try:
                 from gtts import gTTS
                 tts = gTTS(text=text, lang="en", slow=False)
                 tts.save(audio_filepath)
+                
+                # Get the EXACT duration using mutagen to fix syncing mismatch
+                try:
+                    from mutagen.mp3 import MP3
+                    audio_info = MP3(audio_filepath)
+                    actual_duration_ms = int(audio_info.info.length * 1000)
+                except Exception as e:
+                    print(f"[WARN] Failed to read exact duration for {audio_filepath}: {e}")
+                    # Fallback to estimation if mutagen fails
+                    word_count = max(1, len(text.split()))
+                    actual_duration_ms = max(4000, word_count * 400)
+
                 with open(audio_filepath, "rb") as f:
                     slide_bytes = f.read()
             except Exception as e:
@@ -59,7 +69,7 @@ class TTSService:
                 all_audio_bytes.extend(slide_bytes)
 
             start_ms = current_time_ms
-            end_ms = current_time_ms + estimated_duration_ms
+            end_ms = current_time_ms + actual_duration_ms
             current_time_ms = end_ms
 
             audio_url = f"/data/audio/{audio_filename}"
@@ -70,7 +80,7 @@ class TTSService:
                 "keywords": slide.get("keywords", []),
                 "start_time_ms": start_ms,
                 "end_time_ms": end_ms,
-                "duration_ms": estimated_duration_ms,
+                "duration_ms": actual_duration_ms,
                 "audio_url": audio_url
             })
 
