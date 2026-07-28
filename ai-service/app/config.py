@@ -12,7 +12,12 @@ class Settings:
     # Server
     PORT: int = int(os.getenv("PORT", "8000"))
 
-    # Google Gemini LLM
+    # Groq LLM (Primary — Llama 3.3 70B)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_BASE_URL: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+    # Google Gemini LLM (Fallback)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 
     # Google Cloud TTS

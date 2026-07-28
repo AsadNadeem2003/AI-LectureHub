@@ -10,7 +10,7 @@ interface Course {
 
 interface LectureUploaderProps {
   courses: Course[];
-  onUploadComplete?: () => void;
+  onUploadComplete?: (courseId: string) => void;
 }
 
 export default function LectureUploader({ courses, onUploadComplete }: LectureUploaderProps) {
@@ -43,7 +43,8 @@ export default function LectureUploader({ courses, onUploadComplete }: LectureUp
           if (data.status === "READY") {
             setStatus("READY");
             clearInterval(interval);
-            if (onUploadComplete) onUploadComplete();
+            const targetCourseId = courseId || (courses.length > 0 ? courses[0].id : "");
+            if (onUploadComplete) onUploadComplete(targetCourseId);
           } else if (data.status === "FAILED") {
             setStatus("FAILED");
             setErrorMessage(data.errorMessage || "Processing failed");

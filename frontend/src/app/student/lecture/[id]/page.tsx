@@ -342,7 +342,7 @@ export default function InteractiveLectureStudio({
             Interactive Studio
           </span>
           <span className="text-xs text-slate-500 font-medium">
-            Instructor: {lecture.uploadedBy?.name || "Dr. Ahmed Khan"}
+            Instructor: {lecture.uploadedBy?.name || "Instructor"}
           </span>
         </div>
       </div>
@@ -412,7 +412,7 @@ export default function InteractiveLectureStudio({
               {/* Header Info Notice */}
               <div className="bg-amber-50/70 p-2.5 rounded-xl border border-amber-200/70 flex items-center gap-2 text-[11px] text-amber-900 font-medium">
                 <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Ask AI or send questions directly to your teacher ({lecture.uploadedBy?.name || "Dr. Ahmed Khan"})!</span>
+                <span>Ask AI or send questions directly to your teacher ({lecture.uploadedBy?.name || "Instructor"})!</span>
               </div>
 
               {directEscalateSuccess && (
@@ -509,7 +509,7 @@ export default function InteractiveLectureStudio({
                   className="w-full py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-bold rounded-lg text-[11px] disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
                 >
                   <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
-                  Send Directly to Instructor ({lecture.uploadedBy?.name || "Dr. Ahmed Khan"})
+                  Send Directly to Instructor ({lecture.uploadedBy?.name || "Instructor"})
                 </button>
               </div>
             </div>
