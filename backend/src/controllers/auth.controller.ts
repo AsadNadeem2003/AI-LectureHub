@@ -112,7 +112,7 @@ export const setPassword = async (req: Request, res: Response): Promise<void> =>
 
 export const getMe = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user.id;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, name: true, role: true },

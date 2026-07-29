@@ -120,11 +120,6 @@ export default function TeacherDashboard() {
         const qData = await qRes.json();
         const qList = qData.questions || [];
         setQuestions(qList);
-        setAnalytics((prev) => ({
-          ...prev,
-          escalatedCount: qList.length,
-          totalQuestions: qList.length + 12,
-        }));
       }
 
       // 3. Fetch Analytics
@@ -133,11 +128,14 @@ export default function TeacherDashboard() {
       });
       if (aRes.ok) {
         const aData = await aRes.json();
-        setAnalytics((prev) => ({
-          ...prev,
-          totalCourses: aData.totalCourses || 1,
-          totalStudentsEnrolled: aData.totalStudentsEnrolled || 24,
-        }));
+        setAnalytics({
+          totalCourses: aData.totalCourses || 0,
+          totalStudentsEnrolled: aData.totalStudentsEnrolled || 0,
+          avgCompletionRate: aData.avgCompletionRate || 0,
+          totalQuestions: aData.totalQuestions || 0,
+          aiSolvedCount: aData.aiSolvedCount || 0,
+          escalatedCount: aData.escalatedCount || 0,
+        });
       }
 
       // 4. Fetch All Users for Enrollment dropdown
@@ -347,7 +345,9 @@ export default function TeacherDashboard() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI Solved Q&A Ratio</p>
-            <h3 className="font-heading font-black text-xl text-purple-950">85.7%</h3>
+            <h3 className="font-heading font-black text-xl text-purple-950">
+              {analytics.totalQuestions > 0 ? ((analytics.aiSolvedCount / analytics.totalQuestions) * 100).toFixed(1) : 0}%
+            </h3>
           </div>
         </div>
       </div>
@@ -564,7 +564,9 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-2 gap-2 text-center text-xs">
               <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200">
                 <p className="text-[10px] text-emerald-800 font-bold uppercase">AI Solved</p>
-                <p className="font-heading font-black text-emerald-900 text-base">85.7%</p>
+                <p className="font-heading font-black text-emerald-900 text-base">
+                  {analytics.totalQuestions > 0 ? ((analytics.aiSolvedCount / analytics.totalQuestions) * 100).toFixed(1) : 0}%
+                </p>
               </div>
               <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200">
                 <p className="text-[10px] text-amber-800 font-bold uppercase">Escalated</p>

@@ -14,15 +14,29 @@ router.get(
   authorize(["ADMIN"]),
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const [totalCourses, totalStudents, totalTeachers, totalLectures, totalQuestions, resolvedQuestions] =
+      const [totalCourses, totalLectures, totalQuestions, resolvedQuestions] =
         await Promise.all([
           prisma.course.count(),
-          prisma.user.count({ where: { role: "STUDENT" } }),
-          prisma.user.count({ where: { role: "TEACHER" } }),
           prisma.lecture.count(),
           prisma.question.count(),
           prisma.question.count({ where: { status: "RESOLVED_BY_TEACHER" } }),
         ]);
+
+      // Count only distinct students that are actually assigned to courses
+      const studentAssignments = await prisma.courseAssignment.findMany({
+        where: { role: "STUDENT" },
+        select: { userId: true },
+        distinct: ['userId'],
+      });
+      const totalStudents = studentAssignments.length;
+
+      // Count only distinct teachers that are actually assigned to courses
+      const teacherAssignments = await prisma.courseAssignment.findMany({
+        where: { role: "TEACHER" },
+        select: { userId: true },
+        distinct: ['userId'],
+      });
+      const totalTeachers = teacherAssignments.length;
 
       const aiAccuracyRate =
         totalQuestions > 0
@@ -68,6 +82,14 @@ router.get(
       const teacherId = req.user!.id;
 
       const courses = await prisma.course.findMany({
+        where: {
+          assignments: {
+            some: {
+              userId: teacherId,
+              role: "TEACHER",
+            }
+          }
+        },
         include: {
           lectures: {
             where: { uploadedById: teacherId },
@@ -83,13 +105,45 @@ router.get(
         },
       });
 
-      const totalStudentsEnrolled = await prisma.courseAssignment.count({
-        where: { role: "STUDENT" },
+      const courseIds = courses.map((c: any) => c.id);
+      
+      const studentAssignments = await prisma.courseAssignment.findMany({
+        where: { 
+          role: "STUDENT",
+          courseId: { in: courseIds }
+        },
+        select: { userId: true },
+        distinct: ['userId'],
       });
+      const totalStudentsEnrolled = studentAssignments.length;
+
+      const lectureIds = courses.flatMap((c: any) => c.lectures.map((l: any) => l.id));
+      
+      const progressRecords = await prisma.studentProgress.findMany({
+        where: { lectureId: { in: lectureIds } }
+      });
+      
+      let avgCompletionRate = 0;
+      if (progressRecords.length > 0) {
+        const completed = progressRecords.filter((p: any) => p.isCompleted).length;
+        avgCompletionRate = Math.round((completed / progressRecords.length) * 100);
+      }
+
+      const questions = await prisma.question.findMany({
+        where: { lectureId: { in: lectureIds } }
+      });
+      
+      const totalQuestions = questions.length;
+      const aiSolvedCount = questions.filter((q: any) => q.status === "ANSWERED_BY_AI").length;
+      const escalatedCount = questions.filter((q: any) => q.status === "ESCALATED_TO_TEACHER" || q.status === "PENDING").length;
 
       res.json({
         totalCourses: courses.length,
         totalStudentsEnrolled,
+        avgCompletionRate,
+        totalQuestions,
+        aiSolvedCount,
+        escalatedCount,
         courses,
       });
     } catch (error: any) {
