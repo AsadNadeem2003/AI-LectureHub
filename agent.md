@@ -1,0 +1,69 @@
+# AI Lecture Hub - Agent Context File
+
+Welcome, Agent. This file provides the end-to-end context, architectural overview, and technological stack of the **AI Lecture Hub** repository. Use this information to understand the project structure and make informed, consistent coding decisions.
+
+## 1. Project Overview
+AI Lecture Hub is a role-based, premium educational platform connecting teachers and students through AI. It features interactive lecture studios, automated PDF-to-script generation, and a local Retrieval-Augmented Generation (RAG) AI assistant for real-time student Q&A.
+
+## 2. Tech Stack & Directories
+This is a monorepo consisting of three primary services:
+
+### `frontend/` (Next.js Application)
+- **Framework:** React / Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (Custom glassmorphism design system; *Avoid heavy UI libraries like full Shadcn unless explicitly required*)
+- **State/Auth:** Context API, JWT stored securely.
+
+### `backend/` (Node.js REST API)
+- **Framework:** Express.js
+- **Language:** TypeScript
+- **Database ORM:** Prisma
+- **Database:** PostgreSQL (Hosted via Supabase)
+- **Queues/Workers:** BullMQ + Redis for asynchronous background jobs.
+- **Auth:** JWT with strict Role-Based Access Control (RBAC: ADMIN, TEACHER, STUDENT).
+- **Docs:** swagger-jsdoc & swagger-ui-express.
+
+### `ai-service/` (Python Microservice)
+- **Framework:** FastAPI
+- **Language:** Python
+- **Vector DB:** ChromaDB (Local vector storage)
+- **Embedding Model:** Hugging Face `paraphrase-multilingual-MiniLM-L12-v2` via SentenceTransformers.
+- **Document Parsing:** PyMuPDF (`fitz`) for PDF text and image extraction.
+- **LLM Integration:** Groq / Gemini for script generation and RAG answering.
+
+## 3. End-to-End Core Workflows
+
+### The Lecture Generation Pipeline
+1. **Upload:** Teacher uploads a PDF via the Frontend.
+2. **Queueing:** Node.js backend saves the file and pushes a job to **BullMQ / Redis** to prevent HTTP blocking.
+3. **Processing (Python):** 
+   - `ai-service` picks up the file.
+   - Extracts text and images (via PyMuPDF).
+   - Generates a script via LLM.
+   - Embeds text into vectors (Hugging Face) and stores in **ChromaDB**.
+   - Generates Audio (TTS).
+4. **Completion:** Python service posts results back to PostgreSQL via the Node backend, and the frontend updates via polling.
+
+### The RAG Student Assistant Pipeline
+1. Student asks a question in the interactive player.
+2. Node backend forwards the question to the Python `ai-service`.
+3. Python service embeds the question, queries ChromaDB to **Retrieve** the exact slide text.
+4. Python service **Augments** a prompt with the slide text and asks the LLM to **Generate** a strictly bounded answer.
+
+## 4. Agent Directives & Coding Guidelines
+When modifying this codebase, strictly adhere to the following rules:
+- **TypeScript First:** Ensure strict typing across frontend and backend. Avoid `any`.
+- **UI/UX Aesthetics:** The frontend must maintain a premium, dynamic, glassmorphism aesthetic. Do not use generic plain colors.
+- **Asynchronous Operations:** Never block the Node.js main thread with heavy processing; offload to BullMQ or the Python microservice.
+- **Security:** Ensure all new backend routes implement the `authenticate` and `requireRole` middlewares where applicable.
+
+## 5. Recent System Enhancements
+- **Swagger Documentation:** OpenAPI 3.0 specification generated via `swagger-jsdoc` and interactive UI served at `/api-docs`.
+- **Validation & Limits:** Applied strict length limits (Title: 80 chars, Description: 500 chars) with live UI counters and server-side Zod validation.
+- **Course Administration:** Added `PATCH /api/v1/courses/:id` endpoint and modal UI for course details editing.
+- **Teacher Dashboard Enrollment Clarity:** Explicit course selection added to Teacher Student Enrollment form and dynamic analytics binding.
+- **Smooth Scroll Fix:** Integrated `lenis/dist/lenis.css` and adjusted root viewport heights (`min-h-screen`) to prevent scrollbar locks.
+
+---
+*End of Context.*
+

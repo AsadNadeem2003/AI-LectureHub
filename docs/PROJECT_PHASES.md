@@ -136,7 +136,7 @@ This document outlines the complete, step-by-step implementation phases for buil
 1. **Custom Synchronized Audio Player Component (`/frontend/src/components/player/`)**:
    - Wraps HTML5 `<audio>` element with custom controls (play/pause, timeline slider, playback speed).
    - Listens to `timeupdate` event (in milliseconds).
-   - Matches current audio time with `LectureSegment` `startTimeMs` and `endTimeMs`.
+   - Matches current audio time with `LectureSegment` `startTimeMs` and ut i `endTimeMs`.
    - Displays corresponding slide image(s). If no image exists, renders smooth text overlay.
 
 2. **Automatic Progress Saver (`/frontend/src/hooks/useProgressTracker.ts`)**:

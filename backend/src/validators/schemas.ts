@@ -23,8 +23,9 @@ export const loginSchema = z.object({
 
 // ── Course Schemas ──────────────────────────────────────────────────────────
 export const createCourseSchema = z.object({
-  title: z.string().min(3, "Course title must be at least 3 characters").max(200),
-  description: z.string().max(2000).optional(),
+  title: z.string().min(3, "Course title must be at least 3 characters").max(80, "Course title cannot exceed 80 characters"),
+  description: z.string().max(500, "Description cannot exceed 500 characters").optional(),
+  teacherId: z.string().uuid("Invalid teacher ID").optional(),
 });
 
 export const assignUserSchema = z.object({

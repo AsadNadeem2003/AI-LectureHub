@@ -24,11 +24,105 @@ const setPasswordSchema = z.object({
 });
 
 // Routes
+
+/**
+ * @swagger
+ * /api/v1/auth/login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post("/login", validate(loginSchema), login);
+/**
+ * @swagger
+ * /api/v1/auth/set-password:
+ *   post:
+ *     summary: Set a new password via invite token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password set successfully
+ */
 router.post("/set-password", validate(setPasswordSchema), setPassword);
 
 // Protected routes
+
+/**
+ * @swagger
+ * /api/v1/auth/me:
+ *   get:
+ *     summary: Get current authenticated user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns current user
+ */
 router.get("/me", authenticate, getMe);
+/**
+ * @swagger
+ * /api/v1/auth/invite:
+ *   post:
+ *     summary: Invite a new user (Admin only)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - name
+ *               - role
+ *             properties:
+ *               email:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [TEACHER, STUDENT, ADMIN]
+ *     responses:
+ *       200:
+ *         description: Invite sent successfully
+ */
 router.post("/invite", authenticate, requireRole(["ADMIN"]), validate(inviteSchema), invite);
 
 export default router;

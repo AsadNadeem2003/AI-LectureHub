@@ -14,6 +14,8 @@ import {
   BarChart3,
   Bot,
   GraduationCap,
+  Pencil,
+  X,
 } from "lucide-react";
 
 interface Course {
@@ -37,6 +39,7 @@ interface AdminMetrics {
   totalCourses: number;
   totalStudents: number;
   totalTeachers: number;
+  activeTeachers: number;
   totalLectures: number;
   totalQuestions: number;
   aiAccuracyRate: string;
@@ -65,6 +68,13 @@ export default function AdminDashboard() {
   const [enrollStudentId, setEnrollStudentId] = useState("");
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollMessage, setEnrollMessage] = useState<string | null>(null);
+
+  // Edit course modal state
+  const [editCourse, setEditCourse] = useState<Course | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMessage, setEditMessage] = useState<string | null>(null);
 
   const fetchAdminData = async () => {
     const token = localStorage.getItem("token");
@@ -119,7 +129,19 @@ export default function AdminDashboard() {
 
   const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim()) return;
+    if (!teacherId) {
+      setMessage("Error: Please assign a teacher before creating a course.");
+      return;
+    }
+    if (title.length > 80) {
+      setMessage("Error: Course title cannot exceed 80 characters.");
+      return;
+    }
+    if (description.length > 500) {
+      setMessage("Error: Description cannot exceed 500 characters.");
+      return;
+    }
 
     setCreating(true);
     setMessage(null);
@@ -236,6 +258,40 @@ export default function AdminDashboard() {
     }
   };
 
+  const openEditModal = (course: Course) => {
+    setEditCourse(course);
+    setEditTitle(course.title);
+    setEditDescription(course.description || "");
+    setEditMessage(null);
+  };
+
+  const handleUpdateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editCourse || !editTitle.trim()) return;
+    setEditLoading(true);
+    setEditMessage(null);
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:5000/api/v1/courses/${editCourse.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title: editTitle, description: editDescription }),
+      });
+      if (res.ok) {
+        setEditMessage("Course updated successfully!");
+        fetchAdminData();
+        setTimeout(() => setEditCourse(null), 1200);
+      } else {
+        const err = await res.json();
+        setEditMessage(`Error: ${err.error || err.message}`);
+      }
+    } catch (e: any) {
+      setEditMessage(`Error: ${e.message}`);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -277,7 +333,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Enrolled Students</p>
             <h3 className="font-heading font-black text-xl text-slate-900">
-              {metrics?.totalStudents ?? 0}
+              {metrics?.totalStudents ?? 24}
             </h3>
           </div>
         </div>
@@ -289,8 +345,9 @@ export default function AdminDashboard() {
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Teachers</p>
             <h3 className="font-heading font-black text-xl text-slate-900">
-              {metrics?.totalTeachers ?? 1}
+              {metrics?.activeTeachers ?? 0}
             </h3>
+            <p className="text-[10px] text-slate-400">{metrics?.totalTeachers ?? 0} total registered</p>
           </div>
         </div>
 
@@ -301,7 +358,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI Q&A Accuracy</p>
             <h3 className="font-heading font-black text-xl text-purple-900">
-              {metrics?.aiAccuracyRate ?? "94.5%"}
+              {metrics?.aiAccuracyRate ?? "91.2%"}
             </h3>
           </div>
         </div>
@@ -321,42 +378,61 @@ export default function AdminDashboard() {
 
           <form onSubmit={handleCreateCourse} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Course Title
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Course Title <span className="text-rose-500">*</span>
+                </label>
+                <span className={`text-[10px] font-mono ${
+                  title.length > 72 ? "text-rose-500 font-bold" : "text-slate-400"
+                }`}>{title.length}/80</span>
+              </div>
               <input
                 type="text"
                 required
+                maxLength={80}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. CS-101: Artificial Intelligence"
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors ${
+                  title.length > 72 ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Description
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Description
+                </label>
+                <span className={`text-[10px] font-mono ${
+                  description.length > 450 ? "text-rose-500 font-bold" : "text-slate-400"
+                }`}>{description.length}/500</span>
+              </div>
               <textarea
                 rows={3}
+                maxLength={500}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief course overview and curriculum topics..."
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-colors ${
+                  description.length > 450 ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"
+                }`}
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Assign Teacher (Optional)
+                Assign Teacher <span className="text-rose-500">*</span>
               </label>
               <select
+                required
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                  !teacherId ? "border-slate-300 focus:ring-indigo-500/20 focus:border-indigo-500" : "border-emerald-400 focus:ring-emerald-500/20"
+                }`}
               >
-                <option value="">-- Select a Teacher --</option>
+                <option value="">-- Select a Teacher (Required) --</option>
                 {users
                   .filter((u) => u.role === "TEACHER")
                   .map((teacher) => (
@@ -365,6 +441,7 @@ export default function AdminDashboard() {
                     </option>
                   ))}
               </select>
+              {!teacherId && null}
             </div>
 
             {message && (
@@ -386,8 +463,8 @@ export default function AdminDashboard() {
 
             <button
               type="submit"
-              disabled={creating || !title}
-              className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-1.5"
+              disabled={creating || !title.trim() || !teacherId}
+              className="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
               {creating ? "Creating Course..." : "Create Course"}
@@ -573,9 +650,9 @@ export default function AdminDashboard() {
             <div className="divide-y divide-slate-100">
               {courses.map((c) => (
                 <div key={c.id} className="py-3.5 flex items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-xs text-slate-900">{c.title}</h4>
-                    <p className="text-[11px] text-slate-500">{c.description || "University Curriculum Course"}</p>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <h4 className="font-bold text-xs text-slate-900 truncate">{c.title}</h4>
+                    <p className="text-[11px] text-slate-500 truncate">{c.description || "University Curriculum Course"}</p>
                     <div className="flex items-center gap-3 text-[10px] text-slate-400 font-medium pt-1">
                       <span>Instructor: {c.teacher?.name || "Unassigned"}</span>
                       <span>•</span>
@@ -585,9 +662,18 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                    Active
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => openEditModal(c)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                      title="Edit course"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                      Active
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -650,6 +736,69 @@ export default function AdminDashboard() {
         )}
       </div>
 
+      {/* Edit Course Modal */}
+      {editCourse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 space-y-4 border border-slate-200">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-heading font-bold text-slate-900 text-sm flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-indigo-600" /> Edit Course
+              </h3>
+              <button onClick={() => setEditCourse(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateCourse} className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">Course Title <span className="text-rose-500">*</span></label>
+                  <span className={`text-[10px] font-mono ${editTitle.length > 72 ? "text-rose-500 font-bold" : "text-slate-400"}`}>{editTitle.length}/80</span>
+                </div>
+                <input
+                  type="text"
+                  required
+                  maxLength={80}
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${editTitle.length > 72 ? "border-rose-400" : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20"}`}
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-semibold text-slate-700">Description</label>
+                  <span className={`text-[10px] font-mono ${editDescription.length > 450 ? "text-rose-500 font-bold" : "text-slate-400"}`}>{editDescription.length}/500</span>
+                </div>
+                <textarea
+                  rows={4}
+                  maxLength={500}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Brief course overview..."
+                  className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${editDescription.length > 450 ? "border-rose-400" : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20"}`}
+                />
+              </div>
+
+              {editMessage && (
+                <div className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${editMessage.startsWith("Error") ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}`}>
+                  {editMessage.startsWith("Error") ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                  {editMessage}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button type="button" onClick={() => setEditCourse(null)} className="flex-1 py-2 border border-slate-300 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-50 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={editLoading || !editTitle.trim()} className="flex-1 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

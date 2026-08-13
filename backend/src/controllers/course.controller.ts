@@ -40,6 +40,32 @@ export const createCourse = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+export const updateCourse = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id: courseId } = req.params;
+    const { title, description } = req.body;
+
+    const existing = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!existing) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+
+    const updated = await prisma.course.update({
+      where: { id: courseId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+      },
+    });
+
+    res.status(200).json({ message: "Course updated successfully", course: updated });
+  } catch (error: any) {
+    console.error("Update Course Error:", error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};
+
 export const getCourses = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;

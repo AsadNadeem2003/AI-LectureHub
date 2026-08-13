@@ -20,6 +20,20 @@ async function main() {
   });
   console.log(`✅ Admin created: ${admin.email}`);
 
+  // ── Create Asad Admin ────────────────────────────────────────────────────
+  const asadPassword = await bcrypt.hash("Admin@123", 12);
+  const asad = await prisma.user.upsert({
+    where: { email: "asadnadeem.aws@gmail.com" },
+    update: {},
+    create: {
+      email: "asadnadeem.aws@gmail.com",
+      passwordHash: asadPassword,
+      name: "Asad Nadeem",
+      role: Role.ADMIN,
+    },
+  });
+  console.log(`✅ Asad Admin created: ${asad.email}`);
+
   // ── Create Demo Teacher ──────────────────────────────────────────────────
   const teacherPassword = await bcrypt.hash("Teacher@123", 12);
   const teacher = await prisma.user.upsert({

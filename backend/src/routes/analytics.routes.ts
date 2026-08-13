@@ -30,13 +30,19 @@ router.get(
       });
       const totalStudents = studentAssignments.length;
 
-      // Count only distinct teachers that are actually assigned to courses
-      const teacherAssignments = await prisma.courseAssignment.findMany({
-        where: { role: "TEACHER" },
-        select: { userId: true },
-        distinct: ['userId'],
+      // Total teachers registered in the system (role = TEACHER)
+      const totalTeachers = await prisma.user.count({ where: { role: "TEACHER" } });
+
+      // Active teachers = teachers who uploaded at least 1 lecture in the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const activeTeacherRecords = await prisma.lecture.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+        select: { uploadedById: true },
+        distinct: ["uploadedById"],
       });
-      const totalTeachers = teacherAssignments.length;
+      const activeTeachers = activeTeacherRecords.length;
 
       const aiAccuracyRate =
         totalQuestions > 0
@@ -57,6 +63,7 @@ router.get(
           totalCourses,
           totalStudents,
           totalTeachers,
+          activeTeachers,
           totalLectures,
           totalQuestions,
           aiAccuracyRate: `${aiAccuracyRate}%`,

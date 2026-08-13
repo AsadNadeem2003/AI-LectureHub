@@ -82,18 +82,18 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
 
   // Enrollment states
+  const [enrollCourseId, setEnrollCourseId] = useState("");
   const [enrollStudentId, setEnrollStudentId] = useState("");
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollMessage, setEnrollMessage] = useState<string | null>(null);
 
-
   const [analytics, setAnalytics] = useState<TeacherAnalytics>({
-    totalCourses: 1,
-    totalStudentsEnrolled: 24,
-    avgCompletionRate: 78,
-    totalQuestions: 14,
-    aiSolvedCount: 12,
-    escalatedCount: 2,
+    totalCourses: 0,
+    totalStudentsEnrolled: 0,
+    avgCompletionRate: 0,
+    totalQuestions: 0,
+    aiSolvedCount: 0,
+    escalatedCount: 0,
   });
 
   const fetchData = async () => {
@@ -109,6 +109,7 @@ export default function TeacherDashboard() {
         setCourses(courseList);
         if (courseList.length > 0 && !selectedCourseId) {
           setSelectedCourseId(courseList[0].id);
+          setEnrollCourseId(courseList[0].id);
         }
       }
 
@@ -204,14 +205,15 @@ export default function TeacherDashboard() {
 
   const handleEnrollStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCourseId || !enrollStudentId) return;
+    const courseToEnrollIn = enrollCourseId || selectedCourseId;
+    if (!courseToEnrollIn || !enrollStudentId) return;
 
     setEnrollLoading(true);
     setEnrollMessage(null);
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/courses/${selectedCourseId}/assign`, {
+      const res = await fetch(`http://localhost:5000/api/v1/courses/${courseToEnrollIn}/assign`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -480,11 +482,16 @@ export default function TeacherDashboard() {
           
           {/* Enrolled Students Card */}
           <div className="glass-card rounded-2xl p-5 border border-slate-200 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <Users className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-heading font-bold text-slate-900 text-xs uppercase tracking-wider">
-                Enrolled Students
-              </h3>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-heading font-bold text-slate-900 text-xs uppercase tracking-wider">
+                  Enrolled Students
+                </h3>
+              </div>
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 max-w-[140px] truncate">
+                {courses.find(c => c.id === selectedCourseId)?.title || "Selected Course"}
+              </span>
             </div>
             
             {courseStudents.length === 0 ? (
@@ -511,17 +518,39 @@ export default function TeacherDashboard() {
             <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
               <UserCheck className="w-4 h-4 text-emerald-600" />
               <h3 className="font-heading font-bold text-slate-900 text-xs uppercase tracking-wider">
-                Enroll Student
+                Enroll Student to Course
               </h3>
             </div>
             
             <form onSubmit={handleEnrollStudent} className="space-y-3">
               <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Target Course <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  required
+                  value={enrollCourseId || selectedCourseId || ""}
+                  onChange={(e) => setEnrollCourseId(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium"
+                >
+                  <option value="">-- Select Course --</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Student <span className="text-rose-500">*</span>
+                </label>
                 <select
                   required
                   value={enrollStudentId}
                   onChange={(e) => setEnrollStudentId(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-medium"
                 >
                   <option value="">-- Choose a Student --</option>
                   {users
@@ -575,8 +604,12 @@ export default function TeacherDashboard() {
             </div>
 
             <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] space-y-1">
-              <p className="font-bold text-slate-700">Top Inquired Lecture Concept:</p>
-              <p className="text-slate-500 italic">"Bail principles in cross-cases ratio decidendi"</p>
+              <p className="font-bold text-slate-700">Latest Escalated Student Question:</p>
+              <p className="text-slate-600 italic font-medium">
+                {questions.length > 0
+                  ? `"${questions[0].questionText}"`
+                  : "No pending student inquiries."}
+              </p>
             </div>
           </div>
 
