@@ -331,7 +331,7 @@ export default function InteractiveLectureStudio({
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
       {/* Top Breadcrumb Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
         <Link
           href="/student/dashboard"
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-emerald-600 transition-colors"
@@ -339,18 +339,18 @@ export default function InteractiveLectureStudio({
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="badge-student px-3 py-0.5 rounded-full text-[11px] font-bold uppercase">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="badge-student px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase">
             Interactive Studio
           </span>
-          <span className="text-xs text-slate-500 font-medium">
+          <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate max-w-[200px]">
             Instructor: {lecture.uploadedBy?.name || "Instructor"}
           </span>
         </div>
       </div>
 
       {/* Widescreen 2/3 + 1/3 Studio Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 items-start">
         
         {/* Left Column (2/3): Widescreen Slide Presentation + Audio Player */}
         <div className="lg:col-span-2 space-y-4">
@@ -369,7 +369,7 @@ export default function InteractiveLectureStudio({
         </div>
 
         {/* Right Column (1/3): Dual-Tab Transcript & AI Q&A Studio */}
-        <div className="lg:col-span-1 h-[620px] flex flex-col glass-card rounded-2xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="lg:col-span-1 h-[520px] lg:h-[620px] flex flex-col glass-card rounded-2xl border border-slate-200 overflow-hidden shadow-lg">
           
           {/* Tab Switcher */}
           <div className="flex border-b border-slate-200 bg-slate-100/80 p-1">

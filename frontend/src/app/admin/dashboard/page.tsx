@@ -83,14 +83,28 @@ export default function AdminDashboard() {
       return;
     }
 
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.role !== "ADMIN") {
+          router.push(user.role === "TEACHER" ? "/teacher/dashboard" : "/student/dashboard");
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     try {
       // 1. Fetch Admin Metrics
       const mRes = await fetch("http://localhost:5000/api/v1/analytics/admin", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (mRes.status === 401) {
+      if (mRes.status === 401 || mRes.status === 403) {
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
         router.push("/login");
         return;
       }

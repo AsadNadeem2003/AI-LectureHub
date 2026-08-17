@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import LectureUploader from "@/components/teacher/LectureUploader";
 import {
   BookOpen,
@@ -71,6 +72,7 @@ interface User {
 
 
 export default function TeacherDashboard() {
+  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseStudents, setCourseStudents] = useState<CourseStudent[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -98,11 +100,35 @@ export default function TeacherDashboard() {
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.role === "STUDENT") {
+          router.push("/student/dashboard");
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     try {
       // 1. Fetch courses
       const cRes = await fetch("http://localhost:5000/api/v1/courses", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (cRes.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.push("/login");
+        return;
+      }
       if (cRes.ok) {
         const cData = await cRes.json();
         const courseList = cData.courses || cData;
@@ -401,14 +427,14 @@ export default function TeacherDashboard() {
               <div className="divide-y divide-slate-100">
                 {lectures.map((lec, idx) => (
                   <div key={lec.id} className="py-4 space-y-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
                         <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 font-extrabold text-xs flex items-center justify-center shrink-0 border border-slate-200">
                           #{idx + 1}
                         </span>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-sm text-slate-900">{lec.title}</h4>
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-1 min-w-0">
+                          <h4 className="font-bold text-sm text-slate-900 truncate">{lec.title}</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 lec.status === "READY"
@@ -427,11 +453,11 @@ export default function TeacherDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 shrink-0">
                         {lec.status === "READY" && !lec.isStarted ? (
                           <button
                             onClick={() => handleStartLecture(lec.id)}
-                            className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors flex items-center gap-1.5"
+                            className="w-full sm:w-auto px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors flex items-center justify-center gap-1.5"
                           >
                             <Play className="w-3.5 h-3.5 fill-current" />
                             Publish to Students

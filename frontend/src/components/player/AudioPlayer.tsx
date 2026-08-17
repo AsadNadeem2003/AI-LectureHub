@@ -192,13 +192,13 @@ export default function AudioPlayer({
       </div>
 
       {/* Control Bar */}
-      <div className="flex items-center justify-between gap-4 pt-1">
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 pt-1">
         
         {/* Playback Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => skipSeconds(-5)}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Rewind 5s"
           >
             <RotateCcw className="w-4 h-4" />
@@ -206,14 +206,14 @@ export default function AudioPlayer({
 
           <button
             onClick={togglePlay}
-            className="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform"
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform"
           >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+            {isPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" />}
           </button>
 
           <button
             onClick={() => skipSeconds(5)}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             title="Forward 5s"
           >
             <RotateCw className="w-4 h-4" />
@@ -221,15 +221,15 @@ export default function AudioPlayer({
         </div>
 
         {/* Speed & Volume Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Speed Selector */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-            <Gauge className="w-3.5 h-3.5 text-slate-500 ml-1" />
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 p-0.5 sm:p-1 rounded-lg border border-slate-200">
+            <Gauge className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-500 ml-1 hidden xs:block" />
             {[1, 1.25, 1.5, 2].map((s) => (
               <button
                 key={s}
                 onClick={() => changeSpeed(s)}
-                className={`px-2 py-0.5 text-[10px] font-bold rounded-md transition-all ${
+                className={`px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold rounded-md transition-all ${
                   playbackSpeed === s
                     ? "bg-white text-emerald-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -243,7 +243,7 @@ export default function AudioPlayer({
           {/* Mute Toggle */}
           <button
             onClick={toggleMute}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-500" /> : <Volume2 className="w-4 h-4" />}
           </button>

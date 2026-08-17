@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Sparkles, LayoutDashboard, GraduationCap, ShieldCheck, LogOut } from "lucide-react";
+import { Sparkles, LayoutDashboard, GraduationCap, ShieldCheck, LogOut, Menu, X } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -18,6 +18,7 @@ export default function GlobalNavbar() {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -36,7 +37,6 @@ export default function GlobalNavbar() {
       }
     }
 
-    // Decode token or fetch profile
     fetch("http://localhost:5000/api/v1/auth/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -51,7 +51,6 @@ export default function GlobalNavbar() {
         }
       })
       .catch(() => {
-        // If it fails and we have no stored user, clear token
         if (!localStorage.getItem("user")) {
           localStorage.removeItem("token");
           setUser(null);
@@ -62,7 +61,10 @@ export default function GlobalNavbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    document.cookie = "lecturehub_token=; path=/; max-age=0";
     setUser(null);
+    setMobileMenuOpen(false);
     router.push("/login");
   };
 
@@ -70,12 +72,7 @@ export default function GlobalNavbar() {
     return null; // Hide navbar on auth pages
   }
 
-  // Determine active role context
-  const isDashboardRoute =
-    pathname.startsWith("/teacher") || pathname.startsWith("/student") || pathname.startsWith("/admin");
-
   const effectiveUser = user;
-
   const role = effectiveUser?.role || (pathname.startsWith("/teacher") ? "TEACHER" : pathname.startsWith("/admin") ? "ADMIN" : "STUDENT");
 
   return (
@@ -83,22 +80,22 @@ export default function GlobalNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* Brand Logo */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-indigo-600 text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 fill-current" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
             <div>
-              <span className="font-heading font-extrabold text-lg text-slate-900 tracking-tight block leading-none">
+              <span className="font-heading font-extrabold text-base sm:text-lg text-slate-900 tracking-tight block leading-none">
                 AI LectureHub
               </span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Smart Education Platform
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Smart Education
               </span>
             </div>
           </Link>
 
-          {/* Navigation Links - Role-based scoping */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
             {role === "ADMIN" && (
               <Link
@@ -145,12 +142,12 @@ export default function GlobalNavbar() {
         </div>
 
         {/* User Profile & Role Badge */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {effectiveUser ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Role Badge */}
               <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${
                   role === "ADMIN"
                     ? "badge-admin"
                     : role === "TEACHER"
@@ -170,14 +167,14 @@ export default function GlobalNavbar() {
                 {role}
               </span>
 
-              {/* User Identity */}
-              <div className="hidden sm:block text-right">
-                <p className="text-xs font-bold text-slate-800 leading-tight">{effectiveUser.name}</p>
-                <p className="text-[10px] text-slate-600 font-medium leading-tight">{effectiveUser.email}</p>
+              {/* User Identity (Desktop) */}
+              <div className="hidden md:block text-right max-w-[150px] lg:max-w-[200px]">
+                <p className="text-xs font-bold text-slate-800 leading-tight truncate">{effectiveUser.name}</p>
+                <p className="text-[10px] text-slate-600 font-medium leading-tight truncate">{effectiveUser.email}</p>
               </div>
 
               {/* Avatar Initial */}
-              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center justify-center border border-slate-300">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center justify-center border border-slate-300 shrink-0">
                 {effectiveUser.name ? effectiveUser.name.charAt(0).toUpperCase() : "U"}
               </div>
 
@@ -188,6 +185,15 @@ export default function GlobalNavbar() {
                 title="Log Out"
               >
                 <LogOut className="w-4 h-4" />
+              </button>
+
+              {/* Mobile Menu Toggle Button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+                aria-label="Toggle navigation menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           ) : (
@@ -209,6 +215,70 @@ export default function GlobalNavbar() {
         </div>
 
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3 space-y-3 animate-in slide-in-from-top-2 duration-200">
+          {effectiveUser && (
+            <div className="pb-2 border-b border-slate-100 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-extrabold text-xs flex items-center justify-center border border-slate-300">
+                {effectiveUser.name ? effectiveUser.name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-900 truncate">{effectiveUser.name}</p>
+                <p className="text-[10px] text-slate-500 truncate">{effectiveUser.email}</p>
+              </div>
+            </div>
+          )}
+
+          <nav className="flex flex-col gap-1">
+            {role === "ADMIN" && (
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold ${
+                  pathname.startsWith("/admin")
+                    ? "bg-indigo-50 text-indigo-700 font-bold"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                Admin Dashboard
+              </Link>
+            )}
+
+            {role === "TEACHER" && (
+              <Link
+                href="/teacher/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold ${
+                  pathname.startsWith("/teacher")
+                    ? "bg-amber-50 text-amber-700 font-bold"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4 text-amber-600" />
+                Teacher Studio
+              </Link>
+            )}
+
+            {role === "STUDENT" && (
+              <Link
+                href="/student/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold ${
+                  pathname.startsWith("/student")
+                    ? "bg-emerald-50 text-emerald-700 font-bold"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 text-emerald-600" />
+                Student Hub
+              </Link>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
