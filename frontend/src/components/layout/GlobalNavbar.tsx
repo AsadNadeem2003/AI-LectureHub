@@ -82,7 +82,7 @@ export default function GlobalNavbar() {
         {/* Brand Logo */}
         <div className="flex items-center gap-3 md:gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-indigo-600 text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-2 rounded-xl bg-linear-to-tr from-amber-500 via-emerald-500 to-indigo-600 text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
             <div>
@@ -168,7 +168,7 @@ export default function GlobalNavbar() {
               </span>
 
               {/* User Identity (Desktop) */}
-              <div className="hidden md:block text-right max-w-[150px] lg:max-w-[200px]">
+              <div className="hidden md:block text-right max-w-36 lg:max-w-48">
                 <p className="text-xs font-bold text-slate-800 leading-tight truncate">{effectiveUser.name}</p>
                 <p className="text-[10px] text-slate-600 font-medium leading-tight truncate">{effectiveUser.email}</p>
               </div>

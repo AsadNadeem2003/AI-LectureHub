@@ -186,7 +186,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Available Lectures List */}
-      <div className="glass-card p-6 rounded-2xl border border-slate-200 space-y-4 min-h-[220px]">
+      <div className="glass-card p-6 rounded-2xl border border-slate-200 space-y-4 min-h-56">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="font-heading font-bold text-slate-900 text-base flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-emerald-600" />

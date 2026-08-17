@@ -343,7 +343,7 @@ export default function InteractiveLectureStudio({
           <span className="badge-student px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase">
             Interactive Studio
           </span>
-          <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate max-w-[200px]">
+          <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate max-w-48">
             Instructor: {lecture.uploadedBy?.name || "Instructor"}
           </span>
         </div>
@@ -369,7 +369,7 @@ export default function InteractiveLectureStudio({
         </div>
 
         {/* Right Column (1/3): Dual-Tab Transcript & AI Q&A Studio */}
-        <div className="lg:col-span-1 h-[520px] lg:h-[620px] flex flex-col glass-card rounded-2xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="lg:col-span-1 h-130 lg:h-155 flex flex-col glass-card rounded-2xl border border-slate-200 overflow-hidden shadow-lg">
           
           {/* Tab Switcher */}
           <div className="flex border-b border-slate-200 bg-slate-100/80 p-1">

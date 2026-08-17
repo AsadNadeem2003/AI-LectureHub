@@ -42,7 +42,7 @@ class ScriptGenerator:
         """Initialize API clients and report which engines are available."""
         if self.groq_api_key:
             try:
-                from openai import OpenAI
+                from openai import OpenAI  # type: ignore[import]
                 self._groq_client = OpenAI(
                     api_key=self.groq_api_key,
                     base_url=self.groq_base_url
@@ -55,7 +55,7 @@ class ScriptGenerator:
         # Always initialize Gemini as hot-standby (even if Groq is ready)
         if self.gemini_api_key:
             try:
-                import google.generativeai as genai
+                import google.generativeai as genai  # type: ignore[import]
                 genai.configure(api_key=self.gemini_api_key)
                 self._gemini_ready = True
                 print("[INFO] Gemini engine ready (hot-standby fallback).")
@@ -145,7 +145,7 @@ class ScriptGenerator:
 
     def _call_gemini(self, lecture_title: str, pages: List[ExtractedPage]) -> Dict[str, Any]:
         """Calls Google Gemini to generate a professor-style lecture (fallback path)."""
-        import google.generativeai as genai
+        import google.generativeai as genai  # type: ignore[import]
 
         slide_context = self._build_slide_context(pages)
         prompt = self._build_professor_prompt(lecture_title, slide_context)

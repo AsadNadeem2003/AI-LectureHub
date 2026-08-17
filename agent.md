@@ -82,6 +82,7 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Strict Role Boundary Enforced:** Refined RBAC middlewares so that document uploads (`/upload`) and lecture publishing (`/:id/start`) are strictly restricted to `TEACHER` only. Admins manage courses, faculty assignments, and student enrollments.
 - **Backend Security Hardening (Phase 1):** Integrated `helmet` for HTTP security headers (Clickjacking, XSS, MIME sniffing protection, X-Powered-By concealment). Configured `express-rate-limit` with strict authentication throttling (5 attempts / 15 mins) and general API throttling (50 reqs / min). Configured `trust proxy` for cloud load balancer IP detection. Added Swagger production guard to conceal `/api-docs` on production environments.
 - **Authentication & Token Hardening (Phase 2):** Upgraded authentication to short-lived 15-minute Access Tokens and 7-day `httpOnly`, `Secure`, `SameSite=Strict` Refresh Token Cookies. Implemented `POST /api/v1/auth/refresh` for cryptographic token rotation and `POST /api/v1/auth/logout`. Enhanced frontend `apiClient.ts` with silent automatic 401 token refresh retry and `credentials: 'include'` support.
+- **Code Health & Diagnostics Optimization:** Cleared all 17 IDE linter warnings across Python dynamic imports (`type: ignore`) and normalized arbitrary CSS declarations to canonical Tailwind v4 standards (`bg-linear-to-*`, `aspect-video`, canonical min/max dimensions) across all player and dashboard components.
 
 ---
 

@@ -49,7 +49,7 @@ export default function SlideViewer({
       </div>
 
       {/* 16:9 Widescreen Landscape Presentation Canvas */}
-      <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-6 text-white overflow-hidden shadow-inner">
+      <div className="relative w-full aspect-video bg-linear-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-6 text-white overflow-hidden shadow-inner">
         {imageUrl ? (
           // Render Slide Image
           <img

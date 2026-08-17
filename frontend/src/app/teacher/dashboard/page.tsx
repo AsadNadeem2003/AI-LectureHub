@@ -490,7 +490,7 @@ export default function TeacherDashboard() {
                         </div>
                         <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                           <div
-                            className="bg-gradient-to-r from-amber-500 to-indigo-600 h-full rounded-full transition-all duration-500"
+                            className="bg-linear-to-r from-amber-500 to-indigo-600 h-full rounded-full transition-all duration-500"
                             style={{ width: `${lec.completionRate || 75}%` }}
                           />
                         </div>
@@ -515,7 +515,7 @@ export default function TeacherDashboard() {
                   Enrolled Students
                 </h3>
               </div>
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 max-w-[140px] truncate">
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 max-w-36 truncate">
                 {courses.find(c => c.id === selectedCourseId)?.title || "Selected Course"}
               </span>
             </div>

@@ -54,7 +54,7 @@ export default function TranscriptViewer({
       {/* Auto-scrolling Segments List */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[500px] scrollbar-thin scrollbar-thumb-slate-200"
+        className="flex-1 overflow-y-auto p-4 space-y-3 max-h-125 scrollbar-thin scrollbar-thumb-slate-200"
       >
         {segments.length === 0 ? (
           <div className="text-center py-10 text-slate-400 text-xs">
