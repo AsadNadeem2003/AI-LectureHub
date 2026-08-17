@@ -13,6 +13,7 @@ import swaggerUi from "swagger-ui-express";
 import { specs } from "./swagger";
 
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import { apiLimiter } from "./middleware/rateLimiter.middleware";
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   credentials: true,
 }));
+app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 

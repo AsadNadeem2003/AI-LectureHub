@@ -1,8 +1,22 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
-import { generateToken, verifyToken } from "../lib/jwt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  generateToken,
+  verifyToken,
+  verifyRefreshToken,
+} from "../lib/jwt";
 import { sendInviteEmail } from "../lib/resend";
+
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as "strict" | "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: "/",
+};
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -20,11 +34,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const token = generateToken({ userId: user.id, role: user.role });
+    // 1. Generate short-lived Access Token (15m) and long-lived Refresh Token (7d)
+    const accessToken = generateAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = generateRefreshToken({ userId: user.id, role: user.role });
+
+    // 2. Set Refresh Token in secure httpOnly cookie
+    res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
 
     res.status(200).json({
       message: "Login successful",
-      token,
+      token: accessToken,
+      accessToken,
       user: {
         id: user.id,
         email: user.email,
@@ -34,6 +54,82 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error("Login Error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+/**
+ * POST /api/v1/auth/refresh
+ * Validates the httpOnly Refresh Token cookie and issues a fresh 15-minute Access Token
+ */
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+    if (!rawRefreshToken) {
+      res.status(401).json({ error: "Refresh token missing. Please log in again." });
+      return;
+    }
+
+    // 1. Verify Refresh Token signature
+    let payload;
+    try {
+      payload = verifyRefreshToken(rawRefreshToken);
+    } catch (e) {
+      res.status(401).json({ error: "Invalid or expired refresh token. Please log in again." });
+      return;
+    }
+
+    if (!payload || !payload.userId) {
+      res.status(401).json({ error: "Invalid refresh token payload" });
+      return;
+    }
+
+    // 2. Ensure user still exists in database
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, email: true, name: true, role: true },
+    });
+
+    if (!user) {
+      res.status(401).json({ error: "User no longer exists" });
+      return;
+    }
+
+    // 3. Issue rotated tokens
+    const newAccessToken = generateAccessToken({ userId: user.id, role: user.role });
+    const newRefreshToken = generateRefreshToken({ userId: user.id, role: user.role });
+
+    // 4. Update httpOnly cookie with rotated refresh token
+    res.cookie("refreshToken", newRefreshToken, REFRESH_COOKIE_OPTIONS);
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      token: newAccessToken,
+      user,
+    });
+  } catch (error) {
+    console.error("Refresh Token Error:", error);
+    res.status(500).json({ error: "Failed to refresh token" });
+  }
+};
+
+/**
+ * POST /api/v1/auth/logout
+ * Clears the secure httpOnly Refresh Token cookie
+ */
+export const logout = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as "strict" | "lax",
+      path: "/",
+    });
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Logout Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

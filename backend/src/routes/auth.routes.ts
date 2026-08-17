@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, invite, setPassword, getMe } from "../controllers/auth.controller";
+import { login, refresh, logout, invite, setPassword, getMe } from "../controllers/auth.controller";
 import { authenticate, requireRole } from "../middleware/auth.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { authLimiter } from "../middleware/rateLimiter.middleware";
@@ -32,50 +32,33 @@ const setPasswordSchema = z.object({
  *   post:
  *     summary: Login a user
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *       401:
- *         description: Invalid credentials
  */
 router.post("/login", authLimiter, validate(loginSchema), login);
+
+/**
+ * @swagger
+ * /api/v1/auth/refresh:
+ *   post:
+ *     summary: Refresh access token using httpOnly cookie
+ *     tags: [Auth]
+ */
+router.post("/refresh", refresh);
+
+/**
+ * @swagger
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Logout and clear refresh token cookie
+ *     tags: [Auth]
+ */
+router.post("/logout", logout);
+
 /**
  * @swagger
  * /api/v1/auth/set-password:
  *   post:
  *     summary: Set a new password via invite token
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - token
- *               - password
- *             properties:
- *               token:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password set successfully
  */
 router.post("/set-password", authLimiter, validate(setPasswordSchema), setPassword);
 
