@@ -76,6 +76,7 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Role-Based Route Guards:** Enforced client-side role guards on all dashboards (`/student`, `/teacher`, `/admin`) to eliminate cross-role rendering glitches and ensure strict role isolation.
 - **Core Web Vitals & Skeleton Loaders:** Added animated skeleton loaders for courses and lectures on dashboard views to eliminate Cumulative Layout Shift (CLS) and optimize Largest Contentful Paint (LCP).
 - **Mobile Responsiveness Overhaul:** Added collapsible mobile drawer navigation in `GlobalNavbar`, responsive flex-wrapping on audio scrubber controls, adaptive height scaling for the interactive playback studio, and stacked grid layouts across all dashboards.
+- **Conceptual Lecture Generation (AI Professor Mode):** Enhanced `script_generator.py` with a deep professor-persona prompt that instructs Groq/Gemini to TEACH from slides rather than read them verbatim. Added TTS text preprocessor (`_clean_text_for_speech`) that strips markdown artifacts, replaces abbreviations, and normalizes text for natural spoken narration. Gemini is now a hot-standby (always initialized) for instant failover. Offline fallback now synthesizes bullet points into flowing explanations.
 
 ---
 

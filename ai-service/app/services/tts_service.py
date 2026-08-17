@@ -1,6 +1,7 @@
 """Text-To-Speech (TTS) synthesis service for generating lecture audio and calculating timestamps."""
 
 import os
+import re
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -9,14 +10,54 @@ os.makedirs(AUDIO_OUTPUT_DIR, exist_ok=True)
 
 
 class TTSService:
-    """Service to convert script text to MP3 audio files and generate timestamp alignments."""
+    """Service to convert conceptual lecture scripts to MP3 audio and generate synced timestamps."""
+
+    def _clean_text_for_speech(self, text: str) -> str:
+        """
+        Clean and normalize text for natural TTS pronunciation.
+        Removes formatting artifacts that sound awkward when spoken aloud.
+        """
+        cleaned = text
+
+        # Remove markdown-style formatting (bold, italic, headers)
+        cleaned = re.sub(r'\*\*(.+?)\*\*', r'\1', cleaned)
+        cleaned = re.sub(r'\*(.+?)\*', r'\1', cleaned)
+        cleaned = re.sub(r'^#+\s*', '', cleaned, flags=re.MULTILINE)
+
+        # Remove [SLIDE_X] tags if they leaked through
+        cleaned = re.sub(r'\[SLIDE_\d+\]', '', cleaned, flags=re.IGNORECASE)
+
+        # Replace bullet point markers with natural pauses
+        cleaned = re.sub(r'^[\-•*]\s*', '', cleaned, flags=re.MULTILINE)
+
+        # Replace abbreviations that TTS engines mispronounce
+        abbreviations = {
+            "e.g.": "for example",
+            "i.e.": "that is",
+            "etc.": "and so on",
+            "vs.": "versus",
+            "Dr.": "Doctor",
+            "Prof.": "Professor",
+            "Fig.": "Figure",
+            "approx.": "approximately",
+        }
+        for abbr, replacement in abbreviations.items():
+            cleaned = cleaned.replace(abbr, replacement)
+
+        # Collapse excessive whitespace and newlines into single spaces
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        # Remove any remaining special characters that cause TTS glitches
+        cleaned = re.sub(r'[{}\[\]<>|\\^~`]', '', cleaned)
+
+        return cleaned
 
     def synthesize_slide_scripts(
         self,
         lecture_id: str,
         slide_scripts: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Synthesize TTS audio for each slide script and combine into full lecture audio.
+        """Synthesize TTS audio for each conceptual lecture script and combine into full lecture audio.
         
         Args:
             lecture_id: Identifier for the lecture
@@ -34,14 +75,17 @@ class TTSService:
 
         for slide in slide_scripts:
             p_num = slide.get("page_number", 1)
-            text = slide.get("script_text", "").strip() or f"Slide {p_num}"
+            raw_text = slide.get("script_text", "").strip() or f"Slide {p_num}"
+
+            # Clean text for natural TTS pronunciation
+            text = self._clean_text_for_speech(raw_text)
 
             # Generate MP3 using gTTS
             audio_filename = f"{lecture_id}_p{p_num}.mp3"
             audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, audio_filename)
 
             slide_bytes = b""
-            actual_duration_ms = 4000 # Fallback default
+            actual_duration_ms = 4000  # Fallback default
             
             try:
                 from gtts import gTTS
