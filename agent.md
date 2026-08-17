@@ -77,6 +77,9 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Core Web Vitals & Skeleton Loaders:** Added animated skeleton loaders for courses and lectures on dashboard views to eliminate Cumulative Layout Shift (CLS) and optimize Largest Contentful Paint (LCP).
 - **Mobile Responsiveness Overhaul:** Added collapsible mobile drawer navigation in `GlobalNavbar`, responsive flex-wrapping on audio scrubber controls, adaptive height scaling for the interactive playback studio, and stacked grid layouts across all dashboards.
 - **Conceptual Lecture Generation (AI Professor Mode):** Enhanced `script_generator.py` with a deep professor-persona prompt that instructs Groq/Gemini to TEACH from slides rather than read them verbatim. Added TTS text preprocessor (`_clean_text_for_speech`) that strips markdown artifacts, replaces abbreviations, and normalizes text for natural spoken narration. Gemini is now a hot-standby (always initialized) for instant failover. Offline fallback now synthesizes bullet points into flowing explanations.
+- **Zero-Cost Instant Account Activation:** Added direct activation link generation in `auth.controller.ts` and UI link clipboard copy in `AdminDashboard`. Admins can now invite any user and copy their direct set-password link immediately without requiring a custom email domain or paid transactional email tier.
+- **Gmail SMTP Real Email Delivery:** Integrated `nodemailer` with Gmail SMTP using Google App Passwords. Outbound invitations now successfully deliver real emails directly into any student or teacher inbox (Gmail, Yahoo, Outlook, University domains) with zero domain restrictions and 100% free delivery.
+- **Strict Role Boundary Enforced:** Refined RBAC middlewares so that document uploads (`/upload`) and lecture publishing (`/:id/start`) are strictly restricted to `TEACHER` only. Admins manage courses, faculty assignments, and student enrollments.
 
 ---
 

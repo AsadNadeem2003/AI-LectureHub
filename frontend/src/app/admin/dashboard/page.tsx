@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Pencil,
   X,
+  Link as LinkIcon,
 } from "lucide-react";
 
 interface Course {
@@ -62,6 +63,7 @@ export default function AdminDashboard() {
   const [inviteRole, setInviteRole] = useState("TEACHER");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+  const [generatedInviteLink, setGeneratedInviteLink] = useState<string | null>(null);
 
   // Enrollment states
   const [enrollCourseId, setEnrollCourseId] = useState("");
@@ -199,6 +201,7 @@ export default function AdminDashboard() {
 
     setInviteLoading(true);
     setInviteMessage(null);
+    setGeneratedInviteLink(null);
     const token = localStorage.getItem("token");
 
     try {
@@ -217,14 +220,18 @@ export default function AdminDashboard() {
         return;
       }
 
+      const data = await res.json();
+
       if (res.ok) {
-        setInviteMessage("Invitation sent successfully!");
+        setInviteMessage(data.message || "Invitation created successfully!");
+        if (data.inviteLink) {
+          setGeneratedInviteLink(data.inviteLink);
+        }
         setInviteName("");
         setInviteEmail("");
         fetchAdminData();
       } else {
-        const err = await res.json();
-        setInviteMessage(`Error: ${err.message || err.error}`);
+        setInviteMessage(`Error: ${data.message || data.error}`);
       }
     } catch (e: any) {
       setInviteMessage(`Error: ${e.message}`);
@@ -539,19 +546,47 @@ export default function AdminDashboard() {
             </div>
 
             {inviteMessage && (
-              <div
-                className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
-                  inviteMessage.startsWith("Error")
-                    ? "bg-rose-50 text-rose-700"
-                    : "bg-emerald-50 text-emerald-700"
-                }`}
-              >
-                {inviteMessage.startsWith("Error") ? (
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <div className="space-y-2">
+                <div
+                  className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                    inviteMessage.startsWith("Error")
+                      ? "bg-rose-50 text-rose-700"
+                      : "bg-emerald-50 text-emerald-700"
+                  }`}
+                >
+                  {inviteMessage.startsWith("Error") ? (
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  )}
+                  {inviteMessage}
+                </div>
+
+                {generatedInviteLink && (
+                  <div className="p-3 bg-slate-900 text-white rounded-xl text-xs space-y-2">
+                    <p className="font-bold text-emerald-400 flex items-center gap-1.5">
+                      <LinkIcon className="w-3.5 h-3.5" /> Direct Activation Link:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={generatedInviteLink}
+                        className="bg-slate-800 text-[11px] text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-700 w-full font-mono select-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedInviteLink);
+                          alert("Activation link copied to clipboard!");
+                        }}
+                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg shrink-0 transition-colors"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
                 )}
-                {inviteMessage}
               </div>
             )}
 

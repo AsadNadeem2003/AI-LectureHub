@@ -41,14 +41,14 @@ const upload = multer({
 // All lecture routes require JWT auth
 router.use(authenticate);
 
-// Teacher/Admin upload endpoint: multer handler runs FIRST to parse multipart form data
-router.post('/upload', upload.single('file'), requireRole(['TEACHER', 'ADMIN']), uploadLecture);
+// Teacher upload endpoint: ONLY TEACHER role can upload slide documents
+router.post('/upload', upload.single('file'), requireRole(['TEACHER']), uploadLecture);
 
 // Status polling endpoint
 router.get('/:id/status', getLectureStatus);
 
-// Teacher start lecture endpoint
-router.post('/:id/start', requireRole(['TEACHER', 'ADMIN']), startLecture);
+// Teacher start/publish lecture endpoint: ONLY TEACHER role can publish lectures to students
+router.post('/:id/start', requireRole(['TEACHER']), startLecture);
 
 // Get complete lecture play payload (including saved student progress position)
 router.get('/:id/play', getLecturePlayData);

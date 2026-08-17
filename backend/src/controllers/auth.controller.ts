@@ -62,16 +62,24 @@ export const invite = async (req: Request, res: Response): Promise<void> => {
 
     // Generate an invite token valid for 24 hours
     const inviteToken = generateToken({ userId: user.id, role: user.role });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const inviteLink = `${frontendUrl}/set-password?token=${inviteToken}`;
 
-    // Send the email via Resend
+    console.log(`\n==================================================`);
+    console.log(`✉️  [INVITATION CREATED for ${user.email}]`);
+    console.log(`👉 Activation Link: ${inviteLink}`);
+    console.log(`==================================================\n`);
+
+    // Send the email via Resend (best-effort)
     const emailResult = await sendInviteEmail(user.email, inviteToken);
 
-    if (!emailResult.success) {
-      res.status(500).json({ error: "Failed to send invitation email", details: emailResult.error });
-      return;
-    }
-
-    res.status(201).json({ message: "Invitation sent successfully", user: { id: user.id, email: user.email } });
+    res.status(201).json({
+      message: emailResult.success
+        ? "Invitation email sent successfully."
+        : "User created! (Email delivery restricted on free tier — use activation link below)",
+      inviteLink,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+    });
   } catch (error) {
     console.error("Invite Error:", error);
     res.status(500).json({ error: "Internal server error" });
