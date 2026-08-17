@@ -80,6 +80,7 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Zero-Cost Instant Account Activation:** Added direct activation link generation in `auth.controller.ts` and UI link clipboard copy in `AdminDashboard`. Admins can now invite any user and copy their direct set-password link immediately without requiring a custom email domain or paid transactional email tier.
 - **Gmail SMTP Real Email Delivery:** Integrated `nodemailer` with Gmail SMTP using Google App Passwords. Outbound invitations now successfully deliver real emails directly into any student or teacher inbox (Gmail, Yahoo, Outlook, University domains) with zero domain restrictions and 100% free delivery.
 - **Strict Role Boundary Enforced:** Refined RBAC middlewares so that document uploads (`/upload`) and lecture publishing (`/:id/start`) are strictly restricted to `TEACHER` only. Admins manage courses, faculty assignments, and student enrollments.
+- **Backend Security Hardening (Phase 1):** Integrated `helmet` for HTTP security headers (Clickjacking, XSS, MIME sniffing protection, X-Powered-By concealment). Configured `express-rate-limit` with strict authentication throttling (5 attempts / 15 mins) and general API throttling (50 reqs / min). Configured `trust proxy` for cloud load balancer IP detection. Added Swagger production guard to conceal `/api-docs` on production environments.
 
 ---
 

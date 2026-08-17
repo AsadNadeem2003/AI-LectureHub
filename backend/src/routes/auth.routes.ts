@@ -2,6 +2,7 @@ import { Router } from "express";
 import { login, invite, setPassword, getMe } from "../controllers/auth.controller";
 import { authenticate, requireRole } from "../middleware/auth.middleware";
 import { validate } from "../middleware/validate.middleware";
+import { authLimiter } from "../middleware/rateLimiter.middleware";
 import { z } from "zod";
 
 const router = Router();
@@ -51,7 +52,7 @@ const setPasswordSchema = z.object({
  *       401:
  *         description: Invalid credentials
  */
-router.post("/login", validate(loginSchema), login);
+router.post("/login", authLimiter, validate(loginSchema), login);
 /**
  * @swagger
  * /api/v1/auth/set-password:
@@ -76,7 +77,7 @@ router.post("/login", validate(loginSchema), login);
  *       200:
  *         description: Password set successfully
  */
-router.post("/set-password", validate(setPasswordSchema), setPassword);
+router.post("/set-password", authLimiter, validate(setPasswordSchema), setPassword);
 
 // Protected routes
 
