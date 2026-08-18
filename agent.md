@@ -86,6 +86,10 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Teacher Assigned Courses & Student Roster System:** 
   - **Backend:** Enriched `GET /api/v1/courses` with lecture count and enrolled student count aggregations (`_count`) for instructors. Enhanced `GET /api/v1/courses/:id/students` with student enrollment timestamps and completed lecture tracking.
   - **Frontend Studio:** Added an interactive "My Assigned Academic Courses" card gallery allowing teachers to view every course assigned to them by the Admin, along with total enrolled students and lectures. Added an interactive "Enrolled Students Roster" with search filtering, avatar initials, enrollment dates, and lecture completion indicators.
+- **Processing Copy & Enrollment UX Refinement:**
+  - Upgraded lecture processing copy in `LectureUploader.tsx` to clean, enterprise-grade phrasing without exposing internal framework/vendor names.
+  - Enhanced student enrollment dropdown to automatically mark and disable already-enrolled students (`— (Already Enrolled)`).
+  - Added session mismatch warning for cross-tab token overwrites (`HTTP 403`).
 
 ---
 

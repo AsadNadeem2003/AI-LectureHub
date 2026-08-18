@@ -235,8 +235,8 @@ export default function LectureUploader({ courses, onUploadComplete }: LectureUp
         <div className="py-8 text-center space-y-3 bg-amber-50/50 rounded-xl border border-amber-200">
           <Loader2 className="w-8 h-8 text-amber-600 animate-spin mx-auto" />
           <h4 className="font-bold text-slate-900 text-sm">Processing AI Voice & Slide Visuals</h4>
-          <p className="text-xs text-slate-600 max-w-sm mx-auto">
-            Our Python AI Microservice is parsing high-res slide images, generating Gemini transcripts & synthesizing Google TTS audio narration (~15 seconds)...
+          <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+            Analyzing slide visuals, generating conceptual professor transcripts, and synthesizing synchronized studio audio narration (~15 seconds)...
           </p>
         </div>
       ) : status === "READY" ? (

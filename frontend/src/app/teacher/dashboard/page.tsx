@@ -267,6 +267,10 @@ export default function TeacherDashboard() {
         })
           .then((r) => r.json())
           .then((data) => setCourseStudents(data.students || []));
+      } else if (res.status === 403) {
+        setEnrollMessage("Session error: Your browser session is currently authenticated as a Student. Please log back in with your Teacher account.");
+      } else if (res.status === 401) {
+        router.push("/login");
       } else {
         const err = await res.json();
         setEnrollMessage(`Error: ${err.message || err.error}`);
@@ -701,11 +705,14 @@ export default function TeacherDashboard() {
                   <option value="">-- Choose a Student --</option>
                   {users
                     .filter((u) => u.role === "STUDENT")
-                    .map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} ({student.email})
-                      </option>
-                    ))}
+                    .map((student) => {
+                      const isEnrolled = courseStudents.some((cs) => cs.id === student.id);
+                      return (
+                        <option key={student.id} value={student.id} disabled={isEnrolled}>
+                          {student.name} ({student.email}) {isEnrolled ? "— (Already Enrolled)" : ""}
+                        </option>
+                      );
+                    })}
                 </select>
               </div>
 
