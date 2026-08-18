@@ -92,6 +92,7 @@ When modifying this codebase, strictly adhere to the following rules:
   - **Automated HTTPS / SSL Reverse Proxy (`Caddyfile`):** Automated SSL certificate generation via Let's Encrypt with gzip/zstd payload compression and zero-config path routing (`/api/*`, `/uploads/*`, `/ai/*`, `/`).
   - **1-Click EC2 Bootstrap Script (`setup-ec2.sh`):** Configured 4GB Linux Virtual Swap Memory (giving the `t3.micro` instance ~5GB working memory to prevent Out-Of-Memory termination), official Docker engine installation, and UFW firewall rules.
   - **GitHub Actions CI/CD (`.github/workflows/deploy.yml`):** Automated SSH deployment pipeline triggering zero-downtime rebuilds and database migrations upon every push to `main`.
+  - **Secret Security Hardening:** Removed all default placeholder fallback strings from `docker-compose.prod.yml`, ensuring all database credentials strictly resolve from local `.env` variables that are never committed to public repositories.
 
 ---
 
