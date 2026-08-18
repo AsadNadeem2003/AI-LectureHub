@@ -74,9 +74,17 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
 
     let courses;
     if (role === "ADMIN") {
-      // Admin sees all courses
+      // Admin sees all courses with lecture and enrolled student counts
       courses = await prisma.course.findMany({
-        include: { createdBy: { select: { name: true, email: true } } },
+        include: {
+          createdBy: { select: { name: true, email: true } },
+          _count: {
+            select: {
+              lectures: true,
+              assignments: { where: { role: "STUDENT" } },
+            },
+          },
+        },
         orderBy: { createdAt: "desc" },
       });
     } else {
@@ -85,11 +93,23 @@ export const getCourses = async (req: Request, res: Response): Promise<void> => 
         where: { userId },
         include: {
           course: {
-            include: { createdBy: { select: { name: true, email: true } } },
+            include: {
+              createdBy: { select: { name: true, email: true } },
+              _count: {
+                select: {
+                  lectures: true,
+                  assignments: { where: { role: "STUDENT" } },
+                },
+              },
+            },
           },
         },
       });
-      courses = assignments.map((a) => ({ ...a.course, userRoleInCourse: a.role }));
+      courses = assignments.map((a) => ({
+        ...a.course,
+        userRoleInCourse: a.role,
+        assignedAt: a.assignedAt,
+      }));
     }
 
     res.status(200).json({ courses });
@@ -160,13 +180,38 @@ export const getCourseStudents = async (req: Request, res: Response): Promise<vo
             name: true,
             email: true,
             createdAt: true,
+            progress: {
+              where: {
+                lecture: { courseId },
+              },
+              select: {
+                isCompleted: true,
+                lastPositionMs: true,
+                updatedAt: true,
+              },
+            },
           },
         },
       },
+      orderBy: {
+        assignedAt: "desc",
+      },
     });
 
-    const students = assignments.map((a) => a.user);
-    res.status(200).json({ students });
+    const students = assignments.map((a: any) => {
+      const progressList: any[] = a.user?.progress || [];
+      const completedCount = progressList.filter((p: any) => p.isCompleted).length;
+
+      return {
+        id: a.user.id,
+        name: a.user.name,
+        email: a.user.email,
+        assignedAt: a.assignedAt,
+        completedLectures: completedCount,
+      };
+    });
+
+    res.status(200).json({ students, totalStudents: students.length });
   } catch (error: any) {
     console.error("Get Course Students Error:", error);
     res.status(500).json({ error: error.message || "Internal server error" });

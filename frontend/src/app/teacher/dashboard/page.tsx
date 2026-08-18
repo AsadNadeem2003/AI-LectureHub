@@ -20,13 +20,19 @@ import {
   MessageSquare,
   Bot,
   PieChart,
+  Search,
+  GraduationCap,
+  Layers,
 } from "lucide-react";
 
 interface Course {
   id: string;
   title: string;
   description?: string;
-  _count?: { lectures: number };
+  createdAt?: string;
+  assignedAt?: string;
+  createdBy?: { name: string; email: string };
+  _count?: { lectures: number; assignments: number };
 }
 
 interface Lecture {
@@ -61,6 +67,9 @@ interface CourseStudent {
   id: string;
   name: string;
   email: string;
+  assignedAt?: string;
+  completedLectures?: number;
+  overallCompletion?: number;
 }
 
 interface User {
@@ -81,6 +90,7 @@ export default function TeacherDashboard() {
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [studentSearchQuery, setStudentSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   // Enrollment states
@@ -380,6 +390,83 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
+      {/* Assigned Academic Courses Shelf */}
+      <div className="glass-card p-6 rounded-2xl border border-slate-200 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="font-heading font-bold text-slate-900 text-base flex items-center gap-2">
+              <Folder className="w-5 h-5 text-amber-600" />
+              My Assigned Academic Courses
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Courses assigned to your faculty profile by the Administrator. Click any course to switch your active classroom.
+            </p>
+          </div>
+          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 self-start sm:self-auto">
+            {courses.length} Assigned {courses.length === 1 ? "Course" : "Courses"}
+          </span>
+        </div>
+
+        {courses.length === 0 ? (
+          <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">
+            <Folder className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="text-xs font-semibold text-slate-600">No courses assigned to your profile yet.</p>
+            <p className="text-[11px] text-slate-400">Please contact the administrator to assign academic courses to your instructor account.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => {
+              const isSelected = course.id === selectedCourseId;
+              return (
+                <div
+                  key={course.id}
+                  onClick={() => {
+                    setSelectedCourseId(course.id);
+                    setEnrollCourseId(course.id);
+                  }}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer relative space-y-3 ${
+                    isSelected
+                      ? "bg-amber-50/60 border-amber-400 ring-2 ring-amber-500/20 shadow-md"
+                      : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-xs"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        Course #{course.id.slice(0, 6)}
+                      </span>
+                      <h3 className="font-bold text-sm text-slate-900 truncate leading-snug">
+                        {course.title}
+                      </h3>
+                    </div>
+                    {isSelected && (
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0 border border-amber-300">
+                        Active View
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-slate-500 line-clamp-2 min-h-8">
+                    {course.description || "No course description provided."}
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Users className="w-3.5 h-3.5 text-emerald-600" />
+                      {course._count?.assignments ?? (selectedCourseId === course.id ? courseStudents.length : 0)} Enrolled
+                    </span>
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                      {course._count?.lectures ?? (selectedCourseId === course.id ? lectures.length : 0)} Lectures
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Main 2/3 + 1/3 Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
@@ -453,40 +540,41 @@ export default function TeacherDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        {lec.status === "READY" && !lec.isStarted ? (
+                      {/* Action Button: Publish / Live Class */}
+                      <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                        {lec.status === "READY" && (
                           <button
                             onClick={() => handleStartLecture(lec.id)}
-                            className="w-full sm:w-auto px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors flex items-center justify-center gap-1.5"
+                            disabled={lec.isStarted}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs ${
+                              lec.isStarted
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default"
+                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                            }`}
                           >
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            Publish to Students
+                            {lec.isStarted ? (
+                              <>
+                                <CheckCircle className="w-3.5 h-3.5" /> Published to Students
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3.5 h-3.5 fill-current" /> Publish Lecture
+                              </>
+                            )}
                           </button>
-                        ) : lec.isStarted ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200">
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            Active for Students
-                          </span>
-                        ) : (
-                          <span className="text-xs text-amber-700 font-medium flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            Preparing Audio & Slide Visuals...
-                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Student Progress Completion Bar */}
+                    {/* Student Progress Scrubber / Average Watch Bar */}
                     {lec.isStarted && (
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-bold">
-                          <span className="text-slate-600 flex items-center gap-1">
-                            <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
-                            Student Class Completion Progress
+                      <div className="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <div className="flex justify-between text-[11px] font-medium text-slate-600">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-slate-400" />
+                            Classroom Watch Rate
                           </span>
-                          <span className="text-indigo-700 font-mono">
-                            {lec.completionRate || 75}% Average Watched
-                          </span>
+                          <span className="font-bold text-slate-800">{lec.completionRate || 75}% Avg</span>
                         </div>
                         <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                           <div
@@ -506,35 +594,67 @@ export default function TeacherDashboard() {
         {/* Right Column (1/3): Question Analytics Summary & Escalated Questions Queue */}
         <div className="lg:col-span-1 space-y-6">
           
-          {/* Enrolled Students Card */}
+          {/* Enrolled Students Roster Card */}
           <div className="glass-card rounded-2xl p-5 border border-slate-200 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-emerald-600" />
                 <h3 className="font-heading font-bold text-slate-900 text-xs uppercase tracking-wider">
-                  Enrolled Students
+                  Enrolled Students Roster
                 </h3>
               </div>
               <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 max-w-36 truncate">
-                {courses.find(c => c.id === selectedCourseId)?.title || "Selected Course"}
+                {courseStudents.length} {courseStudents.length === 1 ? "Student" : "Students"}
               </span>
             </div>
+
+            {/* Student Search Box */}
+            {courseStudents.length > 3 && (
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={studentSearchQuery}
+                  onChange={(e) => setStudentSearchQuery(e.target.value)}
+                  placeholder="Search students..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+            )}
             
             {courseStudents.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-2">No students enrolled yet.</p>
+              <p className="text-xs text-slate-400 text-center py-4">No students enrolled in this course yet.</p>
             ) : (
-              <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                {courseStudents.map(student => (
-                  <div key={student.id} className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-lg">
-                    <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {student.name.charAt(0).toUpperCase()}
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
+                {courseStudents
+                  .filter((s) =>
+                    !studentSearchQuery ||
+                    s.name.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                    s.email.toLowerCase().includes(studentSearchQuery.toLowerCase())
+                  )
+                  .map((student) => (
+                    <div key={student.id} className="p-2.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-100 rounded-xl space-y-1.5 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 shadow-xs">
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{student.name}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{student.email}</p>
+                        </div>
+                        {student.overallCompletion !== undefined && student.overallCompletion > 0 && (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full shrink-0">
+                            {student.overallCompletion}%
+                          </span>
+                        )}
+                      </div>
+                      {student.completedLectures !== undefined && student.completedLectures > 0 && (
+                        <div className="text-[10px] text-slate-500 font-medium pl-9">
+                          Completed {student.completedLectures} {student.completedLectures === 1 ? "lecture" : "lectures"}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">{student.name}</p>
-                      <p className="text-[10px] text-slate-500 truncate">{student.email}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>
