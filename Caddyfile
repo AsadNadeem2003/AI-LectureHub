@@ -1,0 +1,29 @@
+# ==========================================
+# Caddy Production Reverse Proxy Config
+# ==========================================
+
+:80 {
+    # Compress all response payloads
+    encode gzip zstd
+
+    # Route backend API endpoints
+    handle /api/* {
+        reverse_proxy backend:5000
+    }
+
+    # Route static file uploads (slides, attachments)
+    handle /uploads/* {
+        reverse_proxy backend:5000
+    }
+
+    # Route AI Microservice endpoints
+    handle /ai/* {
+        uri strip_prefix /ai
+        reverse_proxy ai_service:8001
+    }
+
+    # Route all other web requests to the Next.js Frontend
+    handle {
+        reverse_proxy frontend:3000
+    }
+}

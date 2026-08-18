@@ -1,0 +1,136 @@
+services:
+  # ---------------------------------------------------------------------------
+  # Database: PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: lecturehub_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ai_lecturehub}
+      POSTGRES_USER: ${POSTGRES_USER:-lecturehub_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-SecureCloudPass2026!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lecturehub_user} -d ${POSTGRES_DB:-ai_lecturehub}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lecturehub_net
+
+  # ---------------------------------------------------------------------------
+  # Cache & Queue Broker: Redis 7
+  # ---------------------------------------------------------------------------
+  redis_cache:
+    image: redis:7-alpine
+    container_name: lecturehub_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lecturehub_net
+
+  # ---------------------------------------------------------------------------
+  # AI Microservice: Python FastAPI
+  # ---------------------------------------------------------------------------
+  ai_service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: lecturehub_ai
+    restart: unless-stopped
+    env_file:
+      - ./ai-service/.env
+    environment:
+      - PORT=8001
+    volumes:
+      - ai_data:/app/data
+    networks:
+      - lecturehub_net
+
+  # ---------------------------------------------------------------------------
+  # Backend API: Node.js Express & Prisma
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lecturehub_backend
+    restart: unless-stopped
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis_cache:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-lecturehub_user}:${POSTGRES_PASSWORD:-SecureCloudPass2026!}@postgres_db:5432/${POSTGRES_DB:-ai_lecturehub}?schema=public
+      - REDIS_HOST=redis_cache
+      - REDIS_PORT=6379
+      - AI_SERVICE_URL=http://ai_service:8001
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - lecturehub_net
+
+  # ---------------------------------------------------------------------------
+  # Frontend Application: Next.js Standalone
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lecturehub_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=/api
+    networks:
+      - lecturehub_net
+
+  # ---------------------------------------------------------------------------
+  # Reverse Proxy & Automated SSL (HTTPS): Caddy
+  # ---------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: lecturehub_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+      - ai_service
+    networks:
+      - lecturehub_net
+
+networks:
+  lecturehub_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  backend_uploads:
+  ai_data:
+  caddy_data:
+  caddy_config:

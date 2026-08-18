@@ -50,7 +50,7 @@ export async function apiClient<T = unknown>(
     if (!isRefreshing) {
       isRefreshing = true;
       try {
-        const refreshRes = await fetch("http://localhost:5000/api/v1/auth/refresh", {
+        const refreshRes = await fetch(`${API_BASE_URL}/v1/auth/refresh`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

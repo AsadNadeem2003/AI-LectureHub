@@ -86,10 +86,12 @@ When modifying this codebase, strictly adhere to the following rules:
 - **Teacher Assigned Courses & Student Roster System:** 
   - **Backend:** Enriched `GET /api/v1/courses` with lecture count and enrolled student count aggregations (`_count`) for instructors. Enhanced `GET /api/v1/courses/:id/students` with student enrollment timestamps and completed lecture tracking.
   - **Frontend Studio:** Added an interactive "My Assigned Academic Courses" card gallery allowing teachers to view every course assigned to them by the Admin, along with total enrolled students and lectures. Added an interactive "Enrolled Students Roster" with search filtering, avatar initials, enrollment dates, and lecture completion indicators.
-- **Processing Copy & Enrollment UX Refinement:**
-  - Upgraded lecture processing copy in `LectureUploader.tsx` to clean, enterprise-grade phrasing without exposing internal framework/vendor names.
-  - Enhanced student enrollment dropdown to automatically mark and disable already-enrolled students (`— (Already Enrolled)`).
-  - Added session mismatch warning for cross-tab token overwrites (`HTTP 403`).
+- **AWS Free Tier Production Deployment Infrastructure:**
+  - **Docker Multi-Stage Optimization:** Created production multi-stage Dockerfiles for `backend/Dockerfile` (Node.js 20 Alpine, Prisma engine integration), `ai-service/Dockerfile` (Python 3.11 Slim, PyMuPDF, FastAPI, Edge-TTS), and `frontend/Dockerfile` (Next.js Standalone minimal footprint).
+  - **Docker Compose Orchestration (`docker-compose.prod.yml`):** Full multi-container stack binding PostgreSQL 16 (persistent volumes), Redis 7, Express Backend, FastAPI AI-Service, Next.js Frontend, and Caddy Reverse Proxy over an isolated internal network (`lecturehub_net`).
+  - **Automated HTTPS / SSL Reverse Proxy (`Caddyfile`):** Automated SSL certificate generation via Let's Encrypt with gzip/zstd payload compression and zero-config path routing (`/api/*`, `/uploads/*`, `/ai/*`, `/`).
+  - **1-Click EC2 Bootstrap Script (`setup-ec2.sh`):** Configured 4GB Linux Virtual Swap Memory (giving the `t3.micro` instance ~5GB working memory to prevent Out-Of-Memory termination), official Docker engine installation, and UFW firewall rules.
+  - **GitHub Actions CI/CD (`.github/workflows/deploy.yml`):** Automated SSH deployment pipeline triggering zero-downtime rebuilds and database migrations upon every push to `main`.
 
 ---
 
