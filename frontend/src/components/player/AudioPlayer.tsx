@@ -32,11 +32,11 @@ export default function AudioPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
 
-  // Full URL resolution pointing to FastAPI Microservice (Port 8001) or full URL
+  // Full URL resolution pointing to FastAPI Microservice via /ai or direct CDN/cloud URL
   const fullAudioUrl = audioUrl
-    ? audioUrl.startsWith("http")
+    ? audioUrl.startsWith("http") || audioUrl.startsWith("blob:")
       ? audioUrl
-      : `http://127.0.0.1:8001${audioUrl.startsWith("/") ? "" : "/"}${audioUrl}`
+      : `/ai${audioUrl.startsWith("/") ? "" : "/"}${audioUrl}`
     : null;
 
   // Sync external seek (e.g. transcript sentence click)

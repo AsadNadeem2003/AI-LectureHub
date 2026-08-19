@@ -79,7 +79,7 @@ export default function InteractiveLectureStudio({
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/api/v1/lectures/${lectureId}/play`, {
+    fetch(`/api/v1/lectures/${lectureId}/play`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -105,7 +105,7 @@ export default function InteractiveLectureStudio({
 
     const pollReplies = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/v1/questions/student?lectureId=${lectureId}`, {
+        const res = await fetch(`/api/v1/questions/student?lectureId=${lectureId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -175,8 +175,8 @@ export default function InteractiveLectureStudio({
     setAskingQA(true);
 
     try {
-      // Call Python AI Microservice Vector RAG Q&A
-      const res = await fetch("http://127.0.0.1:8001/api/v1/qa/ask-question", {
+      // Call Python AI Microservice Vector RAG Q&A via /ai reverse proxy
+      const res = await fetch("/ai/api/v1/qa/ask-question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -232,7 +232,7 @@ export default function InteractiveLectureStudio({
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/questions/escalate", {
+      const res = await fetch("/api/v1/questions/escalate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -277,7 +277,7 @@ export default function InteractiveLectureStudio({
     ]);
 
     try {
-      await fetch("http://localhost:5000/api/v1/questions/escalate", {
+      await fetch("/api/v1/questions/escalate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

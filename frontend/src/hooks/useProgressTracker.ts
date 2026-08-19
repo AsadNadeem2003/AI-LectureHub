@@ -11,7 +11,7 @@ export function useProgressTracker(lectureId: string, currentTimeMs: number) {
       if (!token) return;
 
       try {
-        await fetch(`http://localhost:5000/api/v1/lectures/${lectureId}/progress`, {
+        await fetch(`/api/v1/lectures/${lectureId}/progress`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

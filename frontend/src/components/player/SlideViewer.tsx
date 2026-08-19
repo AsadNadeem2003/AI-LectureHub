@@ -53,7 +53,7 @@ export default function SlideViewer({
         {imageUrl ? (
           // Render Slide Image
           <img
-            src={imageUrl.startsWith("http") || imageUrl.startsWith("data:") ? imageUrl : `http://127.0.0.1:8001${imageUrl}`}
+            src={imageUrl.startsWith("http") || imageUrl.startsWith("data:") ? imageUrl : `/ai${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`}
             alt={`Slide ${pageNum}`}
             className="max-h-full max-w-full object-contain rounded-lg shadow-2xl border border-slate-700/50"
           />

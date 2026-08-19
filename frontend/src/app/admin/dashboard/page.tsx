@@ -100,7 +100,7 @@ export default function AdminDashboard() {
 
     try {
       // 1. Fetch Admin Metrics
-      const mRes = await fetch("http://localhost:5000/api/v1/analytics/admin", {
+      const mRes = await fetch("/api/v1/analytics/admin", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
       }
 
       // 2. Fetch Courses
-      const cRes = await fetch("http://localhost:5000/api/v1/courses", {
+      const cRes = await fetch("/api/v1/courses", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
         setCourses(cData.courses || cData);
       }
       // 3. Fetch Users
-      const uRes = await fetch("http://localhost:5000/api/v1/users", {
+      const uRes = await fetch("/api/v1/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/courses", {
+      const res = await fetch("/api/v1/courses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/auth/invite", {
+      const res = await fetch("/api/v1/auth/invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/courses/${enrollCourseId}/assign`, {
+      const res = await fetch(`/api/v1/courses/${enrollCourseId}/assign`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
     setEditMessage(null);
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/courses/${editCourse.id}`, {
+      const res = await fetch(`/api/v1/courses/${editCourse.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title: editTitle, description: editDescription }),

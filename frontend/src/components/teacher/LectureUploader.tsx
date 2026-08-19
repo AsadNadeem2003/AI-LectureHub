@@ -35,7 +35,7 @@ export default function LectureUploader({ courses, onUploadComplete }: LectureUp
     const token = localStorage.getItem("token");
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/v1/lectures/${processingLectureId}/status`, {
+        const res = await fetch(`/api/v1/lectures/${processingLectureId}/status`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -94,7 +94,7 @@ export default function LectureUploader({ courses, onUploadComplete }: LectureUp
     formData.append("courseId", targetCourseId);
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/lectures/upload", {
+      const res = await fetch("/api/v1/lectures/upload", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

@@ -37,7 +37,7 @@ export default function GlobalNavbar() {
       }
     }
 
-    fetch("http://localhost:5000/api/v1/auth/me", {
+    fetch("/api/v1/auth/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {

@@ -60,7 +60,7 @@ export default function StudentDashboard() {
       }
     }
 
-    fetch("http://localhost:5000/api/v1/courses", {
+    fetch("/api/v1/courses", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => {
@@ -88,7 +88,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (!selectedCourseId) return;
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/api/v1/lectures/course/${selectedCourseId}`, {
+    fetch(`/api/v1/lectures/course/${selectedCourseId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())

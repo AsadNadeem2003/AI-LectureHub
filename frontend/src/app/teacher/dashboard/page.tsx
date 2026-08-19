@@ -130,7 +130,7 @@ export default function TeacherDashboard() {
 
     try {
       // 1. Fetch courses
-      const cRes = await fetch("http://localhost:5000/api/v1/courses", {
+      const cRes = await fetch("/api/v1/courses", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (cRes.status === 401) {
@@ -150,7 +150,7 @@ export default function TeacherDashboard() {
       }
 
       // 2. Fetch escalated questions
-      const qRes = await fetch("http://localhost:5000/api/v1/questions/teacher", {
+      const qRes = await fetch("/api/v1/questions/teacher", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (qRes.ok) {
@@ -160,7 +160,7 @@ export default function TeacherDashboard() {
       }
 
       // 3. Fetch Analytics
-      const aRes = await fetch("http://localhost:5000/api/v1/analytics/teacher", {
+      const aRes = await fetch("/api/v1/analytics/teacher", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (aRes.ok) {
@@ -176,7 +176,7 @@ export default function TeacherDashboard() {
       }
 
       // 4. Fetch All Users for Enrollment dropdown
-      const uRes = await fetch("http://localhost:5000/api/v1/users", {
+      const uRes = await fetch("/api/v1/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (uRes.ok) {
@@ -198,7 +198,7 @@ export default function TeacherDashboard() {
   useEffect(() => {
     if (!selectedCourseId) return;
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/api/v1/lectures/course/${selectedCourseId}`, {
+    fetch(`/api/v1/lectures/course/${selectedCourseId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -212,7 +212,7 @@ export default function TeacherDashboard() {
       .catch((err) => console.error(err));
 
     // Fetch enrolled students
-    fetch(`http://localhost:5000/api/v1/courses/${selectedCourseId}/students`, {
+    fetch(`/api/v1/courses/${selectedCourseId}/students`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -225,7 +225,7 @@ export default function TeacherDashboard() {
   const handleStartLecture = async (lectureId: string) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/lectures/${lectureId}/start`, {
+      const res = await fetch(`/api/v1/lectures/${lectureId}/start`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -249,7 +249,7 @@ export default function TeacherDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/courses/${courseToEnrollIn}/assign`, {
+      const res = await fetch(`/api/v1/courses/${courseToEnrollIn}/assign`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +262,7 @@ export default function TeacherDashboard() {
         setEnrollMessage("Student successfully enrolled!");
         setEnrollStudentId("");
         // Re-fetch enrolled students to update the list
-        fetch(`http://localhost:5000/api/v1/courses/${selectedCourseId}/students`, {
+        fetch(`/api/v1/courses/${selectedCourseId}/students`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((r) => r.json())
@@ -290,7 +290,7 @@ export default function TeacherDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/questions/${qId}/reply`, {
+      const res = await fetch(`/api/v1/questions/${qId}/reply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -483,7 +483,7 @@ export default function TeacherDashboard() {
               if (targetId) {
                 setSelectedCourseId(targetId); // Switch to the uploaded course view
                 const token = localStorage.getItem("token");
-                fetch(`http://localhost:5000/api/v1/lectures/course/${targetId}`, {
+                fetch(`/api/v1/lectures/course/${targetId}`, {
                   headers: { Authorization: `Bearer ${token}` },
                 })
                   .then((r) => r.json())
