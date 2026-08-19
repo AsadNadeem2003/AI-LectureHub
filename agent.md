@@ -94,6 +94,7 @@ When modifying this codebase, strictly adhere to the following rules:
   - **GitHub Actions CI/CD (`.github/workflows/deploy.yml`):** Automated SSH deployment pipeline triggering zero-downtime rebuilds and database migrations upon every push to `main`.
   - **Secret Security Hardening:** Removed all default placeholder fallback strings from `docker-compose.prod.yml`, ensuring all database credentials strictly resolve from local `.env` variables that are never committed to public repositories.
   - **Universal Relative API & Reverse Proxy Routing:** Refactored all frontend API requests (`/api/v1/*`, `/ai/*`, and media streams) from hardcoded `localhost:5000` / `127.0.0.1:8001` to dynamic relative routes routed seamlessly through the Caddy gateway on production and staging.
+  - **Universal Production Database Seeding:** Created `backend/prisma/seed.js` using native Node.js and CommonJS Prisma client, enabling 1-click database seeding inside production Docker containers without devDependencies (`ts-node`).
 
 ---
 
