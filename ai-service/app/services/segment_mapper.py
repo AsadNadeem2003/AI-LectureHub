@@ -18,7 +18,7 @@ class SegmentMapper:
 
         for idx, timing in enumerate(slide_timings):
             p_num = timing.get("page_number", idx + 1)
-            images = page_image_map.get(p_num, [])
+            images = timing.get("images") or page_image_map.get(p_num, [])
 
             segment = LectureSegmentOut(
                 segment_index=idx,

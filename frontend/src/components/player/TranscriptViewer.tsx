@@ -25,12 +25,15 @@ export default function TranscriptViewer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeItemRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll smooth to keep current active spoken sentence centered
+  // Auto-scroll smooth to keep current active spoken sentence centered strictly inside the container
   useEffect(() => {
     if (activeItemRef.current && containerRef.current) {
-      activeItemRef.current.scrollIntoView({
+      const container = containerRef.current;
+      const activeEl = activeItemRef.current;
+      const topOffset = activeEl.offsetTop - container.offsetTop;
+      container.scrollTo({
+        top: topOffset - container.clientHeight / 2 + activeEl.clientHeight / 2,
         behavior: "smooth",
-        block: "nearest",
       });
     }
   }, [activeSegmentIndex]);

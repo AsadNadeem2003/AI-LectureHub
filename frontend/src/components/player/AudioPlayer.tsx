@@ -85,9 +85,14 @@ export default function AudioPlayer({
     } else {
       setIsPlaying(true);
       if (audioRef.current && fullAudioUrl) {
+        audioRef.current.muted = isMuted;
+        audioRef.current.volume = 1.0;
         audioRef.current
           .play()
-          .then(() => setAudioLoaded(true))
+          .then(() => {
+            setAudioLoaded(true);
+            console.log("🔊 Audio playing successfully:", fullAudioUrl);
+          })
           .catch((err) => {
             console.warn("HTML5 audio playback blocked/failed, falling back to timer mode:", err);
             setAudioLoaded(false);
@@ -123,9 +128,10 @@ export default function AudioPlayer({
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
+      audioRef.current.muted = nextMuted;
     }
   };
 
@@ -143,6 +149,7 @@ export default function AudioPlayer({
           ref={audioRef}
           src={fullAudioUrl}
           preload="auto"
+          playsInline
           onError={(e) => {
             console.warn("⚠️ Audio load error, falling back to timer sync mode", e);
             setAudioLoaded(false);

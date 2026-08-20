@@ -16,4 +16,5 @@ python-docx>=1.1.0
 python-multipart>=0.0.9
 openai>=1.40.0
 gtts>=2.5.1
+edge-tts>=6.1.10
 mutagen>=1.47.0

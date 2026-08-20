@@ -28,7 +28,7 @@ jobs:
           script: |
             set -e
             echo "🚀 Connecting to EC2 and deploying latest build..."
-            cd ~/AI-LectureHub || git clone https://github.com/AsadNadeem2003/AI-LectureHub.git ~/AI-LectureHub && cd ~/AI-LectureHub
+            cd ~/AI-LectureHub || (git clone https://github.com/AsadNadeem2003/AI-LectureHub.git ~/AI-LectureHub && cd ~/AI-LectureHub)
             git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+            sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
             echo "✅ Deployment completed successfully!"

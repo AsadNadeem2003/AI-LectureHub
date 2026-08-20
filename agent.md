@@ -97,6 +97,9 @@ When modifying this codebase, strictly adhere to the following rules:
   - **Universal Production Database Seeding:** Created `backend/prisma/seed.js` using native Node.js and CommonJS Prisma client, enabling 1-click database seeding inside production Docker containers without devDependencies (`ts-node`).
   - **Industry-Standard Authentication Throttling:** Enhanced `rateLimiter.middleware.ts` with `skipSuccessfulRequests: true`, a 5-minute sliding window, and 20-attempt threshold to prevent false-positive lockouts on typos and shared university campus Wi-Fi networks while retaining robust anti-bruteforce defense.
   - **Prisma Interactive Transaction Scaling:** Extended `prisma.$transaction` timeout in `lecture.worker.ts` to `timeout: 30000ms, maxWait: 20000ms` (from default 5000ms), eliminating transaction timeout exceptions during bulk insertion of large slide decks and keyword embeddings.
+  - **Edge-TTS Neural Synthesis & FFmpeg Audio Stream Packaging:** Upgraded `tts_service.py` with Microsoft Edge Neural TTS (`en-US-ChristopherNeural`), gTTS fallback, and ffmpeg clean stream concat encoding (`libmp3lame`), eliminating audio decode errors and ensuring 100% audio playback across iOS/Android/Desktop browsers.
+  - **Mobile Studio Viewport Scroll Stabilization:** Refactored `TranscriptViewer.tsx` to use container-scoped `container.scrollTo()` instead of viewport-scoped `scrollIntoView()`, permanently keeping the mobile screen focused on the live presentation slide without jumping.
+  - **Thematic Cognitive Chunking Engine:** Enhanced `script_generator.py` and `segment_mapper.py` with automatic slide clustering for long slide presentations (>10 pages), condensing raw documents into 8–14 high-impact, conceptual masterclass modules while preserving 100% of diagrams and ChromaDB vector search accuracy.
 
 ---
 

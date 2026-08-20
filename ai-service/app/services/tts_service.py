@@ -2,6 +2,8 @@
 
 import os
 import re
+import asyncio
+import subprocess
 from typing import List, Dict, Any, Optional
 from app.config import settings
 
@@ -13,10 +15,7 @@ class TTSService:
     """Service to convert conceptual lecture scripts to MP3 audio and generate synced timestamps."""
 
     def _clean_text_for_speech(self, text: str) -> str:
-        """
-        Clean and normalize text for natural TTS pronunciation.
-        Removes formatting artifacts that sound awkward when spoken aloud.
-        """
+        """Clean and normalize text for natural TTS pronunciation."""
         cleaned = text
 
         # Remove markdown-style formatting (bold, italic, headers)
@@ -52,6 +51,46 @@ class TTSService:
 
         return cleaned
 
+    def _synthesize_single_slide(self, text: str, output_path: str) -> bool:
+        """Synthesize a single slide audio using Edge-TTS (primary) or gTTS (fallback)."""
+        # Try Edge-TTS first (ultra-fast neural professor voice)
+        try:
+            import edge_tts
+            voice = "en-US-ChristopherNeural"
+
+            async def _run_edge():
+                communicate = edge_tts.Communicate(text, voice)
+                await communicate.save(output_path)
+
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(asyncio.run, _run_edge())
+                        future.result(timeout=15)
+                else:
+                    loop.run_until_complete(_run_edge())
+            except RuntimeError:
+                asyncio.run(_run_edge())
+
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
+                return True
+        except Exception as e:
+            print(f"[INFO] Edge-TTS fallback to gTTS: {e}")
+
+        # Fallback to gTTS
+        try:
+            from gtts import gTTS
+            tts = gTTS(text=text, lang="en", slow=False)
+            tts.save(output_path)
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 100:
+                return True
+        except Exception as e:
+            print(f"[WARN] gTTS synthesis failed: {e}")
+
+        return False
+
     def synthesize_slide_scripts(
         self,
         lecture_id: str,
@@ -71,7 +110,7 @@ class TTSService:
         """
         slide_timings = []
         current_time_ms = 0
-        all_audio_bytes = bytearray()
+        generated_slide_files = []
 
         for slide in slide_scripts:
             p_num = slide.get("page_number", 1)
@@ -80,37 +119,21 @@ class TTSService:
             # Clean text for natural TTS pronunciation
             text = self._clean_text_for_speech(raw_text)
 
-            # Generate MP3 using gTTS
             audio_filename = f"{lecture_id}_p{p_num}.mp3"
             audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, audio_filename)
 
-            slide_bytes = b""
-            actual_duration_ms = 4000  # Fallback default
-            
-            try:
-                from gtts import gTTS
-                tts = gTTS(text=text, lang="en", slow=False)
-                tts.save(audio_filepath)
-                
-                # Get the EXACT duration using mutagen to fix syncing mismatch
+            actual_duration_ms = max(3000, len(text.split()) * 400)
+
+            success = self._synthesize_single_slide(text, audio_filepath)
+
+            if success and os.path.exists(audio_filepath):
+                generated_slide_files.append(audio_filepath)
                 try:
                     from mutagen.mp3 import MP3
                     audio_info = MP3(audio_filepath)
-                    actual_duration_ms = int(audio_info.info.length * 1000)
+                    actual_duration_ms = max(1000, int(audio_info.info.length * 1000))
                 except Exception as e:
                     print(f"[WARN] Failed to read exact duration for {audio_filepath}: {e}")
-                    # Fallback to estimation if mutagen fails
-                    word_count = max(1, len(text.split()))
-                    actual_duration_ms = max(4000, word_count * 400)
-
-                with open(audio_filepath, "rb") as f:
-                    slide_bytes = f.read()
-            except Exception as e:
-                print(f"[WARN] gTTS synthesis fallback for page {p_num}: {e}")
-                slide_bytes = b""
-
-            if slide_bytes:
-                all_audio_bytes.extend(slide_bytes)
 
             start_ms = current_time_ms
             end_ms = current_time_ms + actual_duration_ms
@@ -128,22 +151,49 @@ class TTSService:
                 "audio_url": audio_url
             })
 
-        # Save combined full lecture MP3 audio file
+        # Save combined full lecture MP3 audio file cleanly via ffmpeg concat
         main_audio_filename = f"{lecture_id}_full.mp3"
         main_audio_filepath = os.path.join(AUDIO_OUTPUT_DIR, main_audio_filename)
 
-        if all_audio_bytes:
-            with open(main_audio_filepath, "wb") as f:
-                f.write(all_audio_bytes)
-            print(f"[OK] Created combined full audio file: {main_audio_filename} ({len(all_audio_bytes)} bytes)")
-        else:
-            with open(main_audio_filepath, "wb") as outfile:
-                for slide in slide_scripts:
-                    p_num = slide.get("page_number", 1)
-                    pf = os.path.join(AUDIO_OUTPUT_DIR, f"{lecture_id}_p{p_num}.mp3")
-                    if os.path.exists(pf):
-                        with open(pf, "rb") as infile:
-                            outfile.write(infile.read())
+        combined_success = False
+        if generated_slide_files:
+            # Method 1: Clean ffmpeg concatenation (proper MP3 frame synchronization)
+            concat_list_path = os.path.join(AUDIO_OUTPUT_DIR, f"{lecture_id}_concat.txt")
+            try:
+                with open(concat_list_path, "w", encoding="utf-8") as f:
+                    for s_path in generated_slide_files:
+                        safe_path = s_path.replace("\\", "/")
+                        f.write(f"file '{safe_path}'\n")
+
+                cmd = [
+                    "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+                    "-i", concat_list_path,
+                    "-c:a", "libmp3lame", "-b:a", "128k",
+                    main_audio_filepath
+                ]
+                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+                if res.returncode == 0 and os.path.exists(main_audio_filepath) and os.path.getsize(main_audio_filepath) > 500:
+                    combined_success = True
+                    print(f"[OK] Successfully combined {len(generated_slide_files)} audio slides with ffmpeg: {main_audio_filename}")
+            except Exception as e:
+                print(f"[WARN] ffmpeg concatenation error: {e}")
+            finally:
+                if os.path.exists(concat_list_path):
+                    try:
+                        os.remove(concat_list_path)
+                    except Exception:
+                        pass
+
+            # Method 2: Fallback byte concatenation if ffmpeg fails
+            if not combined_success:
+                try:
+                    with open(main_audio_filepath, "wb") as outfile:
+                        for s_path in generated_slide_files:
+                            with open(s_path, "rb") as infile:
+                                outfile.write(infile.read())
+                    combined_success = True
+                except Exception as e:
+                    print(f"[ERROR] Byte concatenation fallback failed: {e}")
 
         main_audio_url = f"/data/audio/{main_audio_filename}"
 
@@ -171,7 +221,7 @@ class TTSService:
                 )
                 res = cloudinary.uploader.upload(
                     filepath,
-                    resource_type="video",  # Audio files use video resource_type in Cloudinary
+                    resource_type="video",
                     public_id=f"lecturehub/audio/{filename}"
                 )
                 return res.get("secure_url")
