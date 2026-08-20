@@ -1,4 +1,4 @@
-name: Continuous Deployment to AWS EC2
+name: "Continuous Deployment to AWS EC2"
 
 on:
   push:
@@ -8,23 +8,22 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Production EC2
+    name: "Deploy to Production EC2"
     runs-on: ubuntu-latest
     if: github.repository == 'AsadNadeem2003/AI-LectureHub'
 
     steps:
-      - name: Checkout Repository
+      - name: "Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: Deploy via SSH to AWS EC2
+      - name: "Deploy via SSH to AWS EC2"
         uses: appleboy/ssh-action@v1.0.3
-        if: env.EC2_HOST != ''
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 30m
+          command_timeout: 30m
           script: |
             set -e
             echo "🚀 Connecting to EC2 and deploying latest build..."

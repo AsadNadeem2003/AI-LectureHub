@@ -101,6 +101,7 @@ When modifying this codebase, strictly adhere to the following rules:
   - **Mobile Studio Viewport Scroll Stabilization:** Refactored `TranscriptViewer.tsx` to use container-scoped `container.scrollTo()` instead of viewport-scoped `scrollIntoView()`, permanently keeping the mobile screen focused on the live presentation slide without jumping.
   - **Thematic Cognitive Chunking Engine:** Enhanced `script_generator.py` and `segment_mapper.py` with automatic slide clustering for long slide presentations (>10 pages), condensing raw documents into 8–14 high-impact, conceptual masterclass modules while preserving 100% of diagrams and ChromaDB vector search accuracy.
   - **Lightweight CPU-Only PyTorch Build Optimization:** Updated `ai-service/Dockerfile` to install CPU-only PyTorch (`--index-url https://download.pytorch.org/whl/cpu`), slashing container dependency size from 2.5GB to 150MB and eliminating Out-Of-Memory termination during Docker builds on AWS Free Tier `t3.micro`.
+  - **CI/CD Extended Pipeline Timeout:** Configured `appleboy/ssh-action` with `timeout: 30m, command_timeout: 30m` in `deploy.yml`, preventing runner aborts during initial image compilation.
 
 ---
 
