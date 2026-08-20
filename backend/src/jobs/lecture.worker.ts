@@ -52,39 +52,45 @@ export async function processLectureJob(data: LectureJobData): Promise<void> {
     const audioUrl = result.audio_url || '';
     const segments = result.segments || [];
 
-    await prisma.$transaction(async (tx) => {
-      // 1. Update Lecture status and main outputs
-      await tx.lecture.update({
-        where: { id: lectureId },
-        data: {
-          status: 'READY',
-          scriptContent: transcript,
-          audioUrl: audioUrl,
-          errorMessage: null,
-        },
-      });
-
-      // 2. Delete any existing segments (idempotency)
-      await tx.lectureSegment.deleteMany({
-        where: { lectureId },
-      });
-
-      // 3. Bulk insert synchronized lecture segments
-      if (segments.length > 0) {
-        await tx.lectureSegment.createMany({
-          data: segments.map((seg: any) => ({
-            lectureId,
-            segmentIndex: seg.segment_index,
-            segmentText: seg.segment_text,
-            pageNumber: seg.page_number,
-            imageUrls: seg.image_urls || [],
-            startTimeMs: seg.start_time_ms,
-            endTimeMs: seg.end_time_ms,
-            keywords: seg.keywords || [],
-          })),
+    await prisma.$transaction(
+      async (tx) => {
+        // 1. Update Lecture status and main outputs
+        await tx.lecture.update({
+          where: { id: lectureId },
+          data: {
+            status: 'READY',
+            scriptContent: transcript,
+            audioUrl: audioUrl,
+            errorMessage: null,
+          },
         });
+
+        // 2. Delete any existing segments (idempotency)
+        await tx.lectureSegment.deleteMany({
+          where: { lectureId },
+        });
+
+        // 3. Bulk insert synchronized lecture segments
+        if (segments.length > 0) {
+          await tx.lectureSegment.createMany({
+            data: segments.map((seg: any) => ({
+              lectureId,
+              segmentIndex: seg.segment_index,
+              segmentText: seg.segment_text,
+              pageNumber: seg.page_number,
+              imageUrls: seg.image_urls || [],
+              startTimeMs: seg.start_time_ms,
+              endTimeMs: seg.end_time_ms,
+              keywords: seg.keywords || [],
+            })),
+          });
+        }
+      },
+      {
+        maxWait: 20000, // 20 seconds maximum wait to acquire connection
+        timeout: 30000, // 30 seconds maximum transaction execution time
       }
-    });
+    );
 
     console.log(`✅ [Worker] Lecture ${lectureId} processed successfully! Status: READY (${segments.length} segments)`);
   } catch (error: any) {
