@@ -73,7 +73,7 @@ export default function TranscriptViewer({
                 onClick={() => onSelectSegment(seg.startTimeMs)}
                 className={`p-3.5 rounded-xl transition-all cursor-pointer border text-xs leading-relaxed ${
                   isActive
-                    ? "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-400 text-slate-900 shadow-sm ring-2 ring-emerald-500/10 font-medium"
+                    ? "bg-linear-to-r from-emerald-50 to-teal-50 border-emerald-400 text-slate-900 shadow-sm ring-2 ring-emerald-500/10 font-medium"
                     : "bg-slate-50/50 hover:bg-slate-100 border-slate-200/80 text-slate-600 hover:text-slate-900"
                 }`}
               >

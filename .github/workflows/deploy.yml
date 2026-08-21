@@ -22,12 +22,21 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ubuntu' }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          timeout: 30m
-          command_timeout: 30m
+          timeout: 60m
+          command_timeout: 60m
           script: |
             set -e
             echo "🚀 Connecting to EC2 and deploying latest build..."
             cd ~/AI-LectureHub || (git clone https://github.com/AsadNadeem2003/AI-LectureHub.git ~/AI-LectureHub && cd ~/AI-LectureHub)
             git pull origin main
-            sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+            
+            # Build sequentially to optimize CPU & RAM on t3.micro
+            echo "📦 Building Backend & AI Microservice..."
+            sudo docker compose -f docker-compose.prod.yml build backend ai_service
+            
+            echo "🎨 Building Frontend Next.js..."
+            sudo docker compose -f docker-compose.prod.yml build frontend
+            
+            echo "🚀 Starting Production Stack..."
+            sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
             echo "✅ Deployment completed successfully!"
