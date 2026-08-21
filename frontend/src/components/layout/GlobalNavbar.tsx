@@ -75,18 +75,25 @@ export default function GlobalNavbar() {
   const effectiveUser = user;
   const role = effectiveUser?.role || (pathname.startsWith("/teacher") ? "TEACHER" : pathname.startsWith("/admin") ? "ADMIN" : "STUDENT");
 
+  const getDashboardHref = () => {
+    if (role === "ADMIN") return "/admin/dashboard";
+    if (role === "TEACHER") return "/teacher/dashboard";
+    if (role === "STUDENT") return "/student/dashboard";
+    return "/login";
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
-        {/* Brand Logo */}
+        {/* Brand Logo - Navigates directly to user's assigned dashboard */}
         <div className="flex items-center gap-3 md:gap-6">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-linear-to-tr from-amber-500 via-emerald-500 to-indigo-600 text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+          <Link href={getDashboardHref()} className="flex items-center gap-2.5 group select-none">
+            <div className="p-2 rounded-xl bg-linear-to-tr from-amber-500 via-emerald-500 to-indigo-600 text-white shadow-md shadow-emerald-500/20 group-hover:brightness-105 transition-all">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
             <div>
-              <span className="font-heading font-extrabold text-base sm:text-lg text-slate-900 tracking-tight block leading-none">
+              <span className="font-heading font-extrabold text-base sm:text-lg text-slate-900 tracking-tight block leading-none group-hover:text-emerald-700 transition-colors">
                 AI LectureHub
               </span>
               <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">

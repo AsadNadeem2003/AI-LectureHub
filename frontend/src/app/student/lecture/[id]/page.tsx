@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -73,6 +73,14 @@ export default function InteractiveLectureStudio({
   const [askingQA, setAskingQA] = useState(false);
   const [escalatingIndex, setEscalatingIndex] = useState<number | null>(null);
   const [directEscalateSuccess, setDirectEscalateSuccess] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll chat box to bottom when new messages arrive
+  useEffect(() => {
+    if (activeTab === "qa" && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [qaMessages, askingQA, activeTab]);
 
   // Auto-save progress hook
   useProgressTracker(lectureId, currentTimeMs);
@@ -422,7 +430,7 @@ export default function InteractiveLectureStudio({
           ) : activeTab === "qa" ? (
             /* Tab 2: Smart AI Q&A Assistant */
             <div className="flex-1 flex flex-col overflow-hidden bg-white p-3 space-y-3">
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              <div className="flex-1 overflow-y-auto overscroll-contain space-y-3 pr-1 scrollbar-thin scrollbar-thumb-slate-200">
                 {qaMessages.filter(m => m.sender !== "teacher").map((msg, i) => (
                   <div
                     key={i}
@@ -437,7 +445,7 @@ export default function InteractiveLectureStudio({
                           : "bg-slate-100 text-slate-800 border border-slate-200/80 rounded-bl-none"
                       }`}
                     >
-                      <p>{msg.text}</p>
+                      <p className="leading-relaxed whitespace-pre-line">{msg.text}</p>
                       
                       {msg.sender === "ai" && (
                         <div className="pt-1.5 border-t border-slate-200/80 flex items-center justify-between gap-2 text-[10px]">
@@ -473,9 +481,10 @@ export default function InteractiveLectureStudio({
                 {askingQA && (
                   <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold p-2">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-                    Querying AI Assistant...
+                    AI Assistant is thinking...
                   </div>
                 )}
+                <div ref={chatEndRef} />
               </div>
 
               <div className="space-y-2 pt-2 border-t border-slate-200">
