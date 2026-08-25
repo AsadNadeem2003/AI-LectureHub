@@ -105,6 +105,7 @@ When modifying this codebase, strictly adhere to the following rules:
   - **High-Accuracy RAG Q&A with Groq (Llama 3.3 70B):** Upgraded `qa.py` to route student queries through Groq's high-speed Llama 3.3 70B model (with Gemini hot-standby), adding intelligent conversational greeting detection, strict word-count/abstract compliance, and eliminating raw OCR text dumps.
   - **Dynamic Brand Logo Dashboard Redirection:** Refactored `GlobalNavbar.tsx` brand logo to intelligently navigate logged-in users directly to their designated dashboard (`/admin/dashboard`, `/teacher/dashboard`, `/student/dashboard`) and removed layout jitter.
   - **Isolated Q&A Chat Scroll & Auto-Scroll Anchor:** Added `overscroll-contain` and auto-scrolling `chatEndRef` to the student AI Assistant panel, preventing window-level mouse wheel interference.
+  - **Automated Free SSL / HTTPS (Let's Encrypt / ZeroSSL):** Configured `Caddyfile` with automated domain binding (`3.89.86.157.sslip.io` and `3.89.86.157.nip.io`) over Port 443/80, providing automatic TLS certificate provisioning and permanent HTTP-to-HTTPS redirection with zero maintenance.
 
 ---
 
