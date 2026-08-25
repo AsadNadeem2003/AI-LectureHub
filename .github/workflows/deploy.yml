@@ -37,6 +37,7 @@ jobs:
             echo "🎨 Building Frontend Next.js..."
             sudo docker compose -f docker-compose.prod.yml build frontend
             
-            echo "🚀 Starting Production Stack..."
+            echo "🚀 Starting Production Stack & Reloading Gateway..."
             sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            sudo docker compose -f docker-compose.prod.yml restart caddy
             echo "✅ Deployment completed successfully!"
