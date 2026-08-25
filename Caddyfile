@@ -2,7 +2,10 @@
 # Caddy Production Reverse Proxy Config
 # ==========================================
 
-# Automated ZeroSSL / Let's Encrypt TLS Certificate for Public Free Domain
+{
+    email asadnadeem.aws@gmail.com
+}
+
 3.89.86.157.sslip.io, 3.89.86.157.nip.io {
     # Compress all response payloads
     encode gzip zstd
@@ -24,28 +27,6 @@
     }
 
     # Route all other web requests to Next.js Frontend
-    handle {
-        reverse_proxy frontend:3000
-    }
-}
-
-# Raw IP fallback for HTTP
-:80 {
-    encode gzip zstd
-
-    handle /api/* {
-        reverse_proxy backend:5000
-    }
-
-    handle /uploads/* {
-        reverse_proxy backend:5000
-    }
-
-    handle /ai/* {
-        uri strip_prefix /ai
-        reverse_proxy ai_service:8001
-    }
-
     handle {
         reverse_proxy frontend:3000
     }
