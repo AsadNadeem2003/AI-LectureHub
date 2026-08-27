@@ -32,11 +32,19 @@ import {
   KeyRound,
   RefreshCw,
   Terminal,
+  Play,
+  Sliders,
+  Compass,
+  HelpCircle,
+  FolderOpen,
+  Send,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function DocumentationPage() {
   const [activeSection, setActiveSection] = useState("overview");
   const [activeDiagram, setActiveDiagram] = useState<"arch" | "pipeline" | "erd" | "rag">("arch");
+  const [activeApiTab, setActiveApiTab] = useState<"auth" | "courses" | "lectures" | "qa" | "analytics" | "users" | "ai">("auth");
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, id: string) => {
@@ -46,26 +54,28 @@ export default function DocumentationPage() {
   };
 
   const navItems = [
-    { id: "overview", label: "Executive Overview", icon: Sparkles },
-    { id: "ai-engine", label: "AI & Neural Speech Engine", icon: Cpu },
+    { id: "overview", label: "Executive & Product Overview", icon: Sparkles },
+    { id: "user-guides", label: "Role User Guides (How It Works)", icon: Compass },
+    { id: "components", label: "Frontend & Player Architecture", icon: LayoutDashboard },
+    { id: "ai-engine", label: "AI Microservice & Speech Pipeline", icon: Cpu },
     { id: "diagrams", label: "Interactive Architecture & ERD", icon: Layers },
-    { id: "rbac", label: "RBAC Security Matrix", icon: Shield },
-    { id: "api", label: "REST & AI API Reference", icon: Code2 },
-    { id: "infra", label: "Cloud Infra & Compliance", icon: Server },
+    { id: "rbac", label: "RBAC Security & Permission Matrix", icon: Shield },
+    { id: "api", label: "Comprehensive REST & AI API Reference", icon: Code2 },
+    { id: "infra", label: "AWS Cloud Deployment & Compliance", icon: Server },
   ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white font-sans">
       {/* Top Banner */}
-      <div className="bg-linear-to-r from-indigo-900/60 via-emerald-950/60 to-slate-950 border-b border-slate-800/80 px-4 py-3 sm:px-6">
+      <div className="bg-linear-to-r from-indigo-950 via-slate-900 to-slate-950 border-b border-slate-800/80 px-4 py-3 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-300">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
-              Enterprise v2.4 Live
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              Enterprise v2.4 Reference
             </span>
-            <span className="hidden sm:inline text-slate-400">•</span>
+            <span className="hidden sm:inline text-slate-500">•</span>
             <span className="hidden sm:inline text-slate-400">
-              Client & Engineering Specifications
+              Interactive System, API &amp; Architecture Documentation
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs">
@@ -73,7 +83,7 @@ export default function DocumentationPage() {
               href="/login"
               className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 transition-colors"
             >
-              Go to App <ArrowRight className="w-3.5 h-3.5" />
+              Open Application <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -126,17 +136,17 @@ export default function DocumentationPage() {
                 </nav>
 
                 <div className="mt-6 pt-4 border-t border-slate-800/80">
-                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] space-y-1.5">
+                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] space-y-1.5 font-mono">
                     <div className="text-slate-400 flex items-center justify-between">
-                      <span>Server Status:</span>
+                      <span>Gateway:</span>
                       <span className="text-emerald-400 font-bold flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        Online (HTTPS)
+                        HTTPS :443
                       </span>
                     </div>
                     <div className="text-slate-400 flex items-center justify-between">
-                      <span>Public Ingress:</span>
-                      <span className="font-mono text-slate-300 text-[10px]">
+                      <span>Domain:</span>
+                      <span className="text-slate-300 text-[10px]">
                         3.89.86.157.sslip.io
                       </span>
                     </div>
@@ -150,20 +160,20 @@ export default function DocumentationPage() {
           <main className="lg:col-span-9 space-y-16">
             
             {/* ========================================================================= */}
-            {/* SECTION 1: EXECUTIVE PRODUCT OVERVIEW */}
+            {/* SECTION 1: EXECUTIVE & PRODUCT OVERVIEW */}
             {/* ========================================================================= */}
             <section id="overview" className="space-y-6 scroll-mt-20">
               <div className="p-8 rounded-3xl bg-linear-to-b from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="relative z-10 space-y-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    <Sparkles className="w-3.5 h-3.5" /> Executive Summary
+                    <Sparkles className="w-3.5 h-3.5" /> Executive Summary &amp; System Purpose
                   </div>
                   <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-                    Transforming Raw Academic Materials into Interactive AI Masterclasses
+                    AI LectureHub — The Next-Gen Interactive University Lecture Platform
                   </h1>
                   <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
-                    AI LectureHub is an enterprise educational engine designed for universities, corporate academies, and digital training institutions. It eliminates the cognitive fatigue of passive 50-slide reading by automatically synthesizing slide decks into **condensed, neural-narrated visual lectures** with real-time RAG Q&A.
+                    AI LectureHub is an enterprise-grade education platform that transforms static academic presentations (PDF and PPTX files) into **immersive, studio-narrated AI lecture masterclasses**. It synchronizes visual slides with studio neural audio, clusters verbose presentations into concise thematic modules, and provides real-time RAG question-answering with human-in-the-loop teacher escalation.
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
@@ -176,45 +186,239 @@ export default function DocumentationPage() {
                     <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
                       <div className="text-2xl font-black text-indigo-400">&lt; 15 Seconds</div>
                       <div className="text-xs text-slate-400 font-medium mt-1">
-                        Full 45-slide AI extraction, audio synthesis & vector indexing
+                        Full 45-slide AI parsing, speech synthesis &amp; vector indexing
                       </div>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
                       <div className="text-2xl font-black text-amber-400">100% Retained</div>
                       <div className="text-xs text-slate-400 font-medium mt-1">
-                        Human-in-the-loop teacher escalation for complex edge cases
+                        All diagrams and visual slides kept for student playback
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Value Proposition Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all space-y-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
-                    <Zap className="w-5 h-5" />
+              {/* Core Pillars */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+                    <Zap className="w-4 h-4" />
                   </div>
-                  <h3 className="text-base font-bold text-white">The Student Problem Solved</h3>
+                  <h3 className="text-sm font-bold text-white">1. Zero Instructor Overhead</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Students struggle with dense 40+ page slide decks with minimal audio context. AI LectureHub provides a dual-pane studio featuring real-time slide synchronized transcript, studio neural voice playback, and a live AI tutor.
+                    Faculty upload existing lecture slides. The platform automatically writes an engaging script, generates neural audio, and packages media streams without requiring microphone or camera recording.
                   </p>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all space-y-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
-                    <GraduationCap className="w-5 h-5" />
+                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+                    <GraduationCap className="w-4 h-4" />
                   </div>
-                  <h3 className="text-base font-bold text-white">The Instructor Advantage</h3>
+                  <h3 className="text-sm font-bold text-white">2. Multi-Track Synced Studio</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Faculty members spend zero hours recording audio or editing video. Simply upload standard PDF/PPTX materials. The platform creates studio-grade lectures instantly and routes only unresolved questions to the teacher's queue.
+                    Students listen to crystal-clear neural narration while the slide viewer advances automatically in lockstep with the live transcript, offering variable playback speeds (0.75x to 2x).
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-sm font-bold text-white">3. Precision RAG Q&amp;A</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Queries are answered using Groq Llama 3.3 70B grounded strictly on slide vector embeddings. If confidence is uncertain or the student requests it, the query escalates to the instructor.
                   </p>
                 </div>
               </div>
             </section>
 
             {/* ========================================================================= */}
-            {/* SECTION 2: AI & NEURAL SPEECH ENGINE */}
+            {/* SECTION 2: HOW IT WORKS — ROLE-BY-ROLE USER JOURNEY */}
+            {/* ========================================================================= */}
+            <section id="user-guides" className="space-y-6 scroll-mt-20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                    How It Works — Step-by-Step User Journeys
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    A clear, non-technical walkthrough of how each user interacts with the system
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Admin Journey */}
+                <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+                    <ShieldCheck className="w-5 h-5" />
+                    <span>👑 Admin Workflow (Institution Management)</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 1: Sign In</span>
+                      <p className="text-slate-400">Log into the system with administrative master credentials.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 2: Create Course</span>
+                      <p className="text-slate-400">Define course code (e.g. CS-401) and title (Computer Networks).</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 3: Assign Teacher</span>
+                      <p className="text-slate-400">Assign authorized faculty members to lead specific courses.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 4: Provision Users</span>
+                      <p className="text-slate-400">Invite teachers and students with automated onboarding links.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Teacher Journey */}
+                <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                    <LayoutDashboard className="w-5 h-5" />
+                    <span>👨‍🏫 Teacher Workflow (Lecture Creation &amp; Escalation Inbox)</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 1: Select Course</span>
+                      <p className="text-slate-400">Open your assigned course in the Teacher Studio.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 2: Upload Slides</span>
+                      <p className="text-slate-400">Drag &amp; drop standard `.pdf` or `.pptx` presentations.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 3: AI Generation</span>
+                      <p className="text-slate-400">AI extracts diagrams, clusters modules, and writes studio audio.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 4: Answer Inbox</span>
+                      <p className="text-slate-400">Review student questions that required teacher clarification.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Student Journey */}
+                <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                    <GraduationCap className="w-5 h-5" />
+                    <span>🎓 Student Workflow (Interactive Learning &amp; AI Tutoring)</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 1: Browse Courses</span>
+                      <p className="text-slate-400">Access enrolled subjects and lecture modules.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 2: Studio Player</span>
+                      <p className="text-slate-400">Listen to neural narration while slides flip in sync with transcript.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 3: Ask AI Tutor</span>
+                      <p className="text-slate-400">Ask any question to receive instant answers grounded on the slides.</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <span className="font-bold text-white">Step 4: Ask Teacher</span>
+                      <p className="text-slate-400">Escalate deep questions directly to your teacher with 1 click.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ========================================================================= */}
+            {/* SECTION 3: FRONTEND COMPONENTS & PLAYER ARCHITECTURE */}
+            {/* ========================================================================= */}
+            <section id="components" className="space-y-6 scroll-mt-20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <LayoutDashboard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                    Frontend Components &amp; Studio Player Architecture
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Component breakdown, state management, and real-time audio synchronization logic
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Component 1 */}
+                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-400 font-mono">
+                      &lt;AudioPlayer /&gt;
+                    </span>
+                    <Play className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Custom multi-track audio player maintaining playback state (`isPlaying`, `currentTimeMs`, `playbackRate`). Dispatches continuous timestamp events (`onTimeUpdate`) that synchronize the slide viewer and transcript.
+                  </p>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-400">
+                    <span className="text-emerald-400 font-bold">Key Props:</span> src: string, onTimeUpdate: (ms: number) =&gt; void, playbackSpeed: 0.75x | 1x | 1.25x | 1.5x | 2x
+                  </div>
+                </div>
+
+                {/* Component 2 */}
+                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-400 font-mono">
+                      &lt;SlideViewer /&gt;
+                    </span>
+                    <Layers className="w-4 h-4 text-indigo-400" />
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Displays high-resolution presentation slides and architectural diagrams. Dynamically maps `currentTimeMs` to the active segment time range (`startTimeMs &lt;= time &lt; endTimeMs`) and auto-switches slides.
+                  </p>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-400">
+                    <span className="text-indigo-400 font-bold">Key Props:</span> slides: SlideImage[], activePage: number, onSlideSelect: (page: number) =&gt; void
+                  </div>
+                </div>
+
+                {/* Component 3 */}
+                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-400 font-mono">
+                      &lt;TranscriptViewer /&gt;
+                    </span>
+                    <FileText className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Renders the full lecture narration transcript. Highlights the currently active sentence in real time and uses container-scoped `container.scrollTo()` to scroll smoothly without jumping the browser window.
+                  </p>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-400">
+                    <span className="text-amber-400 font-bold">Key Props:</span> segments: LectureSegment[], currentTimestampMs: number
+                  </div>
+                </div>
+
+                {/* Component 4 */}
+                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-rose-400 font-mono">
+                      &lt;StudentLectureChat /&gt;
+                    </span>
+                    <MessageSquare className="w-4 h-4 text-rose-400" />
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    AI Assistant chat box featuring `overscroll-contain` to isolate scroll events. Sends user queries to the RAG endpoint, displays confidence scores, and enables 1-click teacher escalation.
+                  </p>
+                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-400">
+                    <span className="text-rose-400 font-bold">Key Props:</span> lectureId: string, activePage: number, onAskQuestion: (q: string) =&gt; void
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ========================================================================= */}
+            {/* SECTION 4: AI MICROSERVICE & SPEECH PIPELINE */}
             {/* ========================================================================= */}
             <section id="ai-engine" className="space-y-6 scroll-mt-20">
               <div className="flex items-center gap-3">
@@ -223,58 +427,62 @@ export default function DocumentationPage() {
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                    AI & Neural Speech Architecture
+                    AI Microservice &amp; Speech Pipeline
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Dual-LLM Reasoning, Cognitive Chunking & Sub-Second Neural Audio
+                    PyMuPDF parsing, Thematic Cognitive Chunking, Edge-TTS, and ChromaDB vector embeddings
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Module 1
-                    </span>
-                    <Layers className="w-4 h-4 text-slate-500" />
+              <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4">
+                <h3 className="text-base font-bold text-white">The 5 Pipeline Stages:</h3>
+                <div className="space-y-3 font-mono text-xs">
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-bold shrink-0">Stage 1</span>
+                    <div>
+                      <span className="font-bold text-white">Document Ingestion &amp; OCR (`pdf_parser.py` / `pptx_parser.py`):</span>
+                      <p className="text-slate-400 font-sans mt-0.5">Extracts structured text, title hierarchies, and renders presentation slides as PNG images at 150 DPI for visual display.</p>
+                    </div>
                   </div>
-                  <h4 className="text-sm font-bold text-white">Thematic Cognitive Chunking</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Documents exceeding 10 slides are algorithmically grouped into **8 to 14 coherent masterclass modules**. Crucially, 100% of architectural diagrams and visual artifacts are retained for visual display.
-                  </p>
-                </div>
 
-                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                      Module 2
-                    </span>
-                    <Mic className="w-4 h-4 text-slate-500" />
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 font-bold shrink-0">Stage 2</span>
+                    <div>
+                      <span className="font-bold text-white">Thematic Cognitive Chunking (`script_generator.py`):</span>
+                      <p className="text-slate-400 font-sans mt-0.5">If presentations contain &gt;10 slides, clusters related slides into 8–14 conceptual lecture modules, preserving 100% of diagrams.</p>
+                    </div>
                   </div>
-                  <h4 className="text-sm font-bold text-white">Edge-TTS & FFmpeg Packaging</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Uses Microsoft Edge Neural Voice (`en-US-ChristopherNeural`) with zero rate limits. Audio segments are packaged with FFmpeg (`libmp3lame`, 128k bitrate) into broadcast-compliant MP3s with valid ID3 sync headers.
-                  </p>
-                </div>
 
-                <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      Module 3
-                    </span>
-                    <MessageSquare className="w-4 h-4 text-slate-500" />
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 font-bold shrink-0">Stage 3</span>
+                    <div>
+                      <span className="font-bold text-white">Studio Neural Voice Synthesis (`tts_service.py`):</span>
+                      <p className="text-slate-400 font-sans mt-0.5">Uses Microsoft Edge Neural Voice (`en-US-ChristopherNeural`) with FFmpeg `libmp3lame` stream concat encoding and precise segment timestamping.</p>
+                    </div>
                   </div>
-                  <h4 className="text-sm font-bold text-white">Groq Llama 3.3 70B RAG</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Student queries trigger vector similarity searches in ChromaDB (`cosine space`). Top-5 matching slide chunks are fed to Groq Llama 3.3 70B (with Gemini fallback) to produce grounded, direct answers.
-                  </p>
+
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                    <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 font-bold shrink-0">Stage 4</span>
+                    <div>
+                      <span className="font-bold text-white">Vector Embedding &amp; Indexing (`chroma_manager.py`):</span>
+                      <p className="text-slate-400 font-sans mt-0.5">Generates 384-dimensional multilingual embeddings (`paraphrase-multilingual-MiniLM-L12-v2`) and indexes all slides into ChromaDB in cosine vector space.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                    <span className="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-400 font-bold shrink-0">Stage 5</span>
+                    <div>
+                      <span className="font-bold text-white">Groq RAG Q&amp;A Engine (`qa.py`):</span>
+                      <p className="text-slate-400 font-sans mt-0.5">Matches student questions to top-5 slide contexts, filters greetings, and generates concise answers via Groq Llama 3.3 70B (with Gemini hot-standby).</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
 
             {/* ========================================================================= */}
-            {/* SECTION 3: THE 4 INTERACTIVE ARCHITECTURAL DIAGRAMS */}
+            {/* SECTION 5: THE 4 INTERACTIVE ARCHITECTURAL DIAGRAMS */}
             {/* ========================================================================= */}
             <section id="diagrams" className="space-y-6 scroll-mt-20">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -287,7 +495,7 @@ export default function DocumentationPage() {
                       Interactive Architectural Blueprints
                     </h2>
                     <p className="text-xs text-slate-400">
-                      Inspect core system topology, AI sequence pipeline & database schemas
+                      Explore full-stack infrastructure topology, AI sequences &amp; database schemas
                     </p>
                   </div>
                 </div>
@@ -598,7 +806,7 @@ export default function DocumentationPage() {
             </section>
 
             {/* ========================================================================= */}
-            {/* SECTION 4: ROLE-BASED ACCESS CONTROL (RBAC) MATRIX */}
+            {/* SECTION 6: RBAC SECURITY & PERMISSION MATRIX */}
             {/* ========================================================================= */}
             <section id="rbac" className="space-y-6 scroll-mt-20">
               <div className="flex items-center gap-3">
@@ -668,100 +876,227 @@ export default function DocumentationPage() {
             </section>
 
             {/* ========================================================================= */}
-            {/* SECTION 5: REST & AI API REFERENCE */}
+            {/* SECTION 7: COMPREHENSIVE REST & AI API REFERENCE */}
             {/* ========================================================================= */}
             <section id="api" className="space-y-6 scroll-mt-20">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                  <Code2 className="w-5 h-5" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    <Code2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                      Comprehensive REST &amp; AI API Reference
+                    </h2>
+                    <p className="text-xs text-slate-400">
+                      Every single endpoint, HTTP method, authorization rule, and payload schema
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                    REST API &amp; Microservice Reference
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Core API endpoints with request payloads, status codes, and rate limits
-                  </p>
+
+                {/* API Route Tab Filter */}
+                <div className="flex flex-wrap p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold">
+                  {(["auth", "courses", "lectures", "qa", "analytics", "users", "ai"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveApiTab(tab)}
+                      className={`px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all ${
+                        activeApiTab === tab
+                          ? "bg-rose-600 text-white shadow-md"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
                 </div>
               </div>
 
+              {/* Endpoint Cards */}
               <div className="space-y-4">
-                {/* Endpoint 1 */}
-                <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        POST
-                      </span>
-                      <span className="font-mono text-xs font-bold text-white">
-                        /api/v1/auth/login
-                      </span>
+                {activeApiTab === "auth" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/auth/login</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">Public (Rate limited: 20 failed / 5 min)</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Authenticates email and password, returning a signed JWT token and user profile.</p>
+                      <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
+                        <span className="text-slate-500">// Request Payload</span><br />
+                        &#123; &quot;email&quot;: &quot;student@lecturehub.pk&quot;, &quot;password&quot;: &quot;Student@123&quot; &#125;<br /><br />
+                        <span className="text-slate-500">// Response 200 OK</span><br />
+                        &#123; &quot;token&quot;: &quot;eyJhbGciOi...&quot;, &quot;user&quot;: &#123; &quot;id&quot;: &quot;uuid&quot;, &quot;name&quot;: &quot;Student&quot;, &quot;role&quot;: &quot;STUDENT&quot; &#125; &#125;
+                      </div>
                     </div>
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      Public (Rate limited: 20 failed attempts / 5 min)
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Authenticates credentials and returns a signed JSON Web Token (JWT) with user role claims.
-                  </p>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
-                    <span className="text-slate-500">// Request Payload</span><br />
-                    &#123; &quot;email&quot;: &quot;student@lecturehub.pk&quot;, &quot;password&quot;: &quot;Student@123&quot; &#125;
-                  </div>
-                </div>
 
-                {/* Endpoint 2 */}
-                <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                        POST
-                      </span>
-                      <span className="font-mono text-xs font-bold text-white">
-                        /api/v1/lectures/upload
-                      </span>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">GET</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/auth/me</span>
+                        </div>
+                        <span className="text-[11px] text-indigo-400 font-semibold">Bearer JWT Required</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Returns current authenticated user session data and role permissions.</p>
                     </div>
-                    <span className="text-[11px] text-indigo-400 font-semibold">
-                      Requires Role: TEACHER
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Uploads slide presentation (PDF/PPTX), stores file, and dispatches BullMQ background processing job.
-                  </p>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
-                    <span className="text-slate-500">// Multipart Form Data</span><br />
-                    file: [binary presentation] | courseId: &quot;course_uuid&quot; | title: &quot;Computer Networks Lab 04&quot;
-                  </div>
-                </div>
+                  </>
+                )}
 
-                {/* Endpoint 3 */}
-                <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        POST
-                      </span>
-                      <span className="font-mono text-xs font-bold text-white">
-                        /api/v1/qa/ask-question
-                      </span>
+                {activeApiTab === "courses" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">GET</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/courses</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">Authenticated (All Roles)</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Fetches all courses accessible to the requesting user (enrolled courses for students, assigned courses for teachers).</p>
                     </div>
-                    <span className="text-[11px] text-amber-400 font-semibold">
-                      FastAPI AI Microservice (Groq 70B RAG)
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Performs ChromaDB cosine vector search and synthesizes grounded educational answers with dynamic confidence scoring.
-                  </p>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
-                    <span className="text-slate-500">// Response Payload</span><br />
-                    &#123; &quot;answer_text&quot;: &quot;The default gateway routes traffic...&quot;, &quot;confidence_score&quot;: 0.94, &quot;sources&quot;: [34] &#125;
-                  </div>
-                </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/courses</span>
+                        </div>
+                        <span className="text-[11px] text-emerald-400 font-semibold">Requires Role: ADMIN</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Creates a new course entity and assigns a teacher lead.</p>
+                      <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
+                        &#123; &quot;code&quot;: &quot;CS-301&quot;, &quot;title&quot;: &quot;Operating Systems&quot;, &quot;description&quot;: &quot;Core OS Principles&quot;, &quot;teacherId&quot;: &quot;teacher_uuid&quot; &#125;
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeApiTab === "lectures" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/lectures/upload</span>
+                        </div>
+                        <span className="text-[11px] text-amber-400 font-semibold">Requires Role: TEACHER</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Uploads slide deck (PDF/PPTX), stores file, and dispatches BullMQ async background job.</p>
+                      <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
+                        <span className="text-slate-500">// Multipart Form-Data</span><br />
+                        file: [Binary Presentation File] | courseId: &quot;course_uuid&quot; | title: &quot;Lecture 04: Process Scheduling&quot;
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">GET</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/lectures/:id</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">Authenticated (All Roles)</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Retrieves full lecture metadata, audio URL, and all synchronized segments with millisecond timing marks.</p>
+                    </div>
+                  </>
+                )}
+
+                {activeApiTab === "qa" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/qa/ask-question</span>
+                        </div>
+                        <span className="text-[11px] text-emerald-400 font-semibold">Groq Llama 3.3 70B RAG</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Executes ChromaDB cosine vector search and synthesizes a direct, grounded answer with confidence score.</p>
+                      <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
+                        <span className="text-slate-500">// Request Payload</span><br />
+                        &#123; &quot;lectureId&quot;: &quot;lecture_uuid&quot;, &quot;questionText&quot;: &quot;What is context switching?&quot;, &quot;activePage&quot;: 14 &#125;<br /><br />
+                        <span className="text-slate-500">// Response 200 OK</span><br />
+                        &#123; &quot;answerText&quot;: &quot;Context switching is the process of storing...&quot;, &quot;confidenceScore&quot;: 0.94, &quot;sources&quot;: [14, 15] &#125;
+                      </div>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/qa/escalate</span>
+                        </div>
+                        <span className="text-[11px] text-amber-400 font-semibold">Human-in-the-Loop</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Dispatches an unresolved student question directly to the teacher&apos;s Escalated Question inbox.</p>
+                    </div>
+                  </>
+                )}
+
+                {activeApiTab === "analytics" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">GET</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/analytics/system</span>
+                        </div>
+                        <span className="text-[11px] text-emerald-400 font-semibold">Requires Role: ADMIN</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Aggregates total active users, courses, lectures processed, and storage statistics.</p>
+                    </div>
+                  </>
+                )}
+
+                {activeApiTab === "users" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">GET</span>
+                          <span className="font-mono text-xs font-bold text-white">/api/v1/users</span>
+                        </div>
+                        <span className="text-[11px] text-emerald-400 font-semibold">Requires Role: ADMIN</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Lists all registered student, teacher, and admin profiles in the institution database.</p>
+                    </div>
+                  </>
+                )}
+
+                {activeApiTab === "ai" && (
+                  <>
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/ai/extract</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">Internal AI Microservice</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Extracts slide text, hierarchy, and PNG slide snapshots from uploaded documents via PyMuPDF.</p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">POST</span>
+                          <span className="font-mono text-xs font-bold text-white">/ai/tts</span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">Internal AI Microservice</span>
+                      </div>
+                      <p className="text-xs text-slate-300">Generates Edge-TTS studio neural audio with FFmpeg MP3 packaging and returns millisecond sync metadata.</p>
+                    </div>
+                  </>
+                )}
               </div>
             </section>
 
             {/* ========================================================================= */}
-            {/* SECTION 6: CLOUD INFRASTRUCTURE, SECURITY & COMPLIANCE */}
+            {/* SECTION 8: CLOUD INFRASTRUCTURE, SECURITY & COMPLIANCE */}
             {/* ========================================================================= */}
             <section id="infra" className="space-y-6 scroll-mt-20">
               <div className="flex items-center gap-3">
