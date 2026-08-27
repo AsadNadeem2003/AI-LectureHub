@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Sparkles, LayoutDashboard, GraduationCap, ShieldCheck, LogOut, Menu, X } from "lucide-react";
+import { Sparkles, LayoutDashboard, GraduationCap, ShieldCheck, LogOut, Menu, X, BookOpen } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -145,6 +145,18 @@ export default function GlobalNavbar() {
                 Student Hub
               </Link>
             )}
+
+            <Link
+              href="/docs"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                pathname.startsWith("/docs")
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              Docs
+            </Link>
           </nav>
         </div>
 
@@ -205,6 +217,13 @@ export default function GlobalNavbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
+              <Link
+                href="/docs"
+                className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-emerald-600 flex items-center gap-1 transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                Docs
+              </Link>
               <Link
                 href="/login"
                 className="px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:text-emerald-600 transition-colors"
@@ -283,6 +302,19 @@ export default function GlobalNavbar() {
                 Student Hub
               </Link>
             )}
+
+            <Link
+              href="/docs"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold ${
+                pathname.startsWith("/docs")
+                  ? "bg-slate-900 text-white font-bold"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <BookOpen className="w-4 h-4 text-emerald-600" />
+              Documentation Hub
+            </Link>
           </nav>
         </div>
       )}

@@ -106,6 +106,7 @@ When modifying this codebase, strictly adhere to the following rules:
   - **Dynamic Brand Logo Dashboard Redirection:** Refactored `GlobalNavbar.tsx` brand logo to intelligently navigate logged-in users directly to their designated dashboard (`/admin/dashboard`, `/teacher/dashboard`, `/student/dashboard`) and removed layout jitter.
   - **Isolated Q&A Chat Scroll & Auto-Scroll Anchor:** Added `overscroll-contain` and auto-scrolling `chatEndRef` to the student AI Assistant panel, preventing window-level mouse wheel interference.
   - **Automated Free SSL / HTTPS (Let's Encrypt / ZeroSSL):** Configured `Caddyfile` with automated domain binding (`3.89.86.157.sslip.io` and `3.89.86.157.nip.io`) over Port 443/80, providing automatic TLS certificate provisioning and permanent HTTP-to-HTTPS redirection with zero maintenance.
+  - **Enterprise Client Documentation Portal (`/docs`):** Built a dedicated, interactive client & stakeholder documentation portal at `/docs` featuring the Executive Product Overview, 4 Interactive Architectural Diagrams (Full-Stack System Topology, Cognitive Chunking Pipeline, Database ERD, RAG Q&A Flow), RBAC Permission Matrix, REST & AI API Endpoint Specifications, and Cloud Security/Compliance details.
 
 ---
 
